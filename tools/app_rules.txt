@@ -1,0 +1,8 @@
+||peacock.tv^
+||global.telemetry.insights.video.a2z.com^
+||uts-api.itunes.apple.com^$important
+||play-edge.itunes.apple.com^$important
+||hls-svod.itunes.apple.com^$important
+/(^|\.)hses[0-9]*\.akamaized\.net$/
+/avod[a-z0-9]*-a\.akamaihd\.net$/
+/(^|\.)disneyplus\.com\.akamaized\.net$/

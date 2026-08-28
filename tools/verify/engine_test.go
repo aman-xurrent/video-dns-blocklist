@@ -80,7 +80,11 @@ func main() {
 	}
 
 	intended := map[string]bool{}
-	for _, d := range cov {
+	intendedSrc := cov
+	if len(os.Args) > 5 {
+		intendedSrc = lines(os.Args[5])
+	}
+	for _, d := range intendedSrc {
 		intended[d] = true
 	}
 	isSub := func(h string) bool {

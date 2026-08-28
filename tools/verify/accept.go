@@ -25,6 +25,11 @@ func main() {
 		"webtor.io", "seedr.cc", "real-debrid.com", "torbox.app", "strem.io",
 		"fmovies.to", "soap2day.to", "9anime.to", "streameast.to", "fitgirl-repacks.site",
 		"tracker.opentrackr.org", "open.stealth.si",
+		// native app endpoints
+		"uts-api.itunes.apple.com", "play-edge.itunes.apple.com", "hls-svod.itunes.apple.com",
+		"peacock.tv", "hses1.akamaized.net", "avodmp4s3ww-a.akamaihd.net",
+		"api-global.netflix.com", "atv-ps.amazon.com", "api.hotstar.com",
+		"disney.api.edge.bamgrid.com", "gql.twitch.tv", "apiv2.sonyliv.com",
 	}
 	mustAllow := []string{
 		"music.youtube.com", "googlevideo.com", "youtubei.googleapis.com", "i.ytimg.com",
@@ -39,6 +44,10 @@ func main() {
 		"academictorrents.com", "linuxtracker.org", "bittorrent.com",
 		"themoviedb.org", "api.themoviedb.org", "thetvdb.com", "musicbrainz.org",
 		"trakt.tv", "imdb.com", "jellyfin.org", "github.com", "tracker.corp.internal",
+		// must survive the app rules: shared CDN parents and Apple Music playback
+		"akamaized.net", "e1234.akamaized.net", "akamaihd.net", "cdn.example.akamaihd.net",
+		"audio-ssl.itunes.apple.com", "amp-api.music.apple.com", "aod-ssl.mzstatic.com",
+		"a2z.com", "unagi.amazon.com", "amazon.com",
 	}
 
 	verdict := func(h string) (bool, string) {

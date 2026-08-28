@@ -126,6 +126,40 @@ at `tracker.company.com`, it gets blocked. Private namespaces are protected by a
 covering `.internal`, `.local`, `.corp`, `.lan`, `.home` and `.intranet`. Public ones are not.
 Use `filter.txt` if that matters to you.
 
+### Native apps
+
+The streaming sections are written as domains, and `||domain^` covers every subdomain, so the
+native **Netflix, Prime Video, JioHotstar, Disney+, SonyLIV, Zee5, Max, Hulu, Crunchyroll and
+Twitch** apps are already blocked. Verified against the hostnames those apps actually call.
+
+Three gaps needed explicit rules, and they are in the "Native mobile and TV app endpoints"
+section:
+
+1. **Apple TV+ was wide open because of this list's own allowlist.** Apple Music needs
+   `itunes.apple.com`, so that domain is allowlisted, and the Apple TV+ app talks to `uts-api`,
+   `play-edge` and `hls-svod` on exactly that domain. Those three now carry `$important`, which
+   makes a block rule outrank an exception. Apple Music's `audio-ssl.itunes.apple.com` still
+   works.
+2. **Video hosts on shared CDNs.** `hses*.akamaized.net` is Hotstar, `avod*-a.akamaihd.net` is
+   Prime Video. Only brand scoped names are touched. Bare `akamaized.net` and `akamaihd.net`
+   serve thousands of unrelated sites and are left alone.
+3. **`peacock.tv`**, which is a different domain from `peacocktv.com`.
+
+Deliberately not blocked: `unagi.amazon.com` and friends. That is Prime Video telemetry, but the
+Amazon shopping app uses it too, and blocking telemetry does not stop playback.
+
+**The YouTube app is the one that cannot be fixed.** It only ever resolves
+`youtubei.googleapis.com` and `googlevideo.com`, and YouTube Music needs both. Use Screen Time,
+delete the app, or turn on the strict tier described above.
+
+### If it blocks in the browser but not in apps
+
+That is not a list problem, it is a setup problem. On iOS, AdGuard runs two separate protections:
+Safari content blockers, which cover Safari only including private windows, and DNS protection,
+which covers everything. Add this list under **DNS protection > DNS filters**, not under Safari
+filters. The give away is that Netflix keeps playing in its app: every hostname that app uses is
+on this list, so if it still works, DNS filtering is not reaching your apps.
+
 ### YouTube description links die
 
 `youtube.com/redirect` is the hop every link in a YouTube video description goes through, and it

@@ -50,6 +50,38 @@ def banner(title, notes):
     out.append('!')
     return out
 
+APP_NOTES = [
+ "Everything above is written as a domain, and ||domain^ already covers every",
+ "subdomain, so the native Netflix, Prime Video, JioHotstar, Disney+, SonyLIV,",
+ "Zee5, Max, Hulu, Crunchyroll and Twitch apps are blocked by the sections above",
+ "without needing anything extra. These rules close the three gaps that shape",
+ "could not reach.",
+ "",
+ "1. Hosts hiding behind this file's own allowlist. Apple Music needs",
+ "   itunes.apple.com, so @@||itunes.apple.com^ is in the allowlist. That same",
+ "   exception was holding the whole Apple TV+ app open, because the TV app talks",
+ "   to uts-api, play-edge and hls-svod on that domain. $important makes a block",
+ "   rule outrank an exception, so those three are blocked while Apple Music's",
+ "   audio-ssl.itunes.apple.com stays reachable.",
+ "",
+ "2. Video hosts sitting on a shared CDN. akamaized.net and akamaihd.net serve",
+ "   thousands of unrelated customers, so only brand scoped names are safe to",
+ "   touch. hses is Hotstar Encoded Streams, avod is Amazon Video On Demand.",
+ "",
+ "3. A brand domain the streaming sections missed: peacock.tv, which is separate",
+ "   from peacocktv.com.",
+ "",
+ "Deliberately NOT added: unagi.amazon.com and unagi-eu/na.amazon.com. They are",
+ "Prime Video telemetry, but Amazon's shopping app uses them too, and blocking",
+ "telemetry does not stop playback. Not worth the collateral.",
+ "",
+ "Still not blocked, and not fixable here: the YouTube app. It only ever resolves",
+ "youtubei.googleapis.com and googlevideo.com, both of which YouTube Music needs.",
+]
+
+SECTIONS.append(("Native mobile and TV app endpoints", APP_NOTES,
+    [l.rstrip() for l in open(t('app_rules.txt')) if l.strip() and not l.startswith('#')]))
+
 body = []
 for title, notes, rules in SECTIONS:
     body += banner(title, notes) + rules + ['']
