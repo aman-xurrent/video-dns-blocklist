@@ -14,7 +14,10 @@ Written in AdGuard DNS filtering syntax, the same syntax the
 Two builds, same coverage. Pick one.
 
 **Compact, 485 rules.** Use this if your resolver caps you. The AdGuard DNS Personal plan
-allows 1000 filtering rules across every blocklist you have enabled, counted together.
+allows 1000 filtering rules, and that cap applies to **custom blocklists added by URL**, which
+is exactly how you would subscribe to this one. AdGuard's own catalog lists do not count against
+it, so enabling the AdGuard DNS filter alongside this costs you nothing. Go over the cap and the
+offending custom list is disabled automatically. Team is 5K, Enterprise is 100K.
 
 ```
 https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/filter-compact.txt

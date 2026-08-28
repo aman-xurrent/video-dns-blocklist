@@ -41,10 +41,12 @@
 ! @@||sub.example.com^   is an exception. It puts one name back.
 ! /pattern/          is a regular expression matched against the whole hostname.
 !
-! Why regexes: the AdGuard DNS Personal plan caps you at 1000 filtering rules
-! across every blocklist you have enabled, counted together. This build carries the
-! same coverage as filter.txt in roughly half the rules, and catches mirrors that
-! do not exist yet.
+! Why regexes: the AdGuard DNS Personal plan caps you at 1000 filtering rules, and
+! that cap applies to custom blocklists added by URL, which is how you subscribe to
+! this file. AdGuard's own catalog lists are free and do not count against it. A
+! custom list that goes over the cap is disabled automatically. This build carries
+! the same coverage as filter.txt in roughly half the rules, and catches mirrors
+! that do not exist yet.
 !
 ! Two things about regex rules that are easy to get wrong, both verified against
 ! AdGuard's own engine (github.com/AdguardTeam/urlfilter) rather than assumed:
