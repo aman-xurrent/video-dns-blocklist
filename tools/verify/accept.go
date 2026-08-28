@@ -30,9 +30,11 @@ func main() {
 		"peacock.tv", "hses1.akamaized.net", "avodmp4s3ww-a.akamaihd.net",
 		"api-global.netflix.com", "atv-ps.amazon.com", "api.hotstar.com",
 		"disney.api.edge.bamgrid.com", "gql.twitch.tv", "apiv2.sonyliv.com",
+		// strict tier: kills the YouTube app and the YouTube Music app
+		"youtubei.googleapis.com",
 	}
 	mustAllow := []string{
-		"music.youtube.com", "googlevideo.com", "youtubei.googleapis.com", "i.ytimg.com",
+		"music.youtube.com", "googlevideo.com", "i.ytimg.com",
 		"yt3.googleusercontent.com", "accounts.google.com",
 		"spotify.com", "scdn.co", "encore.scdn.co", "spotifycdn.com",
 		"music.apple.com", "itunes.apple.com", "mzstatic.com",
@@ -48,6 +50,9 @@ func main() {
 		"akamaized.net", "e1234.akamaized.net", "akamaihd.net", "cdn.example.akamaihd.net",
 		"audio-ssl.itunes.apple.com", "amp-api.music.apple.com", "aod-ssl.mzstatic.com",
 		"a2z.com", "unagi.amazon.com", "amazon.com",
+		// YouTube Music on the web must survive the strict tier
+		"music.youtube.com", "googlevideo.com", "rr8---sn-ci5gup-cagr.googlevideo.com",
+		"i.ytimg.com", "yt3.googleusercontent.com",
 	}
 
 	verdict := func(h string) (bool, string) {

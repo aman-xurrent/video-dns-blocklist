@@ -101,15 +101,41 @@ Playback, search and your library all work fine once you are signed in. Verified
 reading the real `music.youtube.com` HTML: the player JavaScript is served from `/s/player/` on
 its own hostname and the InnerTube API call is same origin.
 
-### Strict tier
+### Strict tier, on by default since v1.3.0
 
-Uncomment `||youtubei.googleapis.com^` in the header to also kill the native YouTube app **and**
-the native YouTube Music app. The YouTube Music web player keeps working, because on the web
-InnerTube is same origin and audio still comes from `googlevideo.com`. So: music in a browser
-only, no YouTube app at all.
+`||youtubei.googleapis.com^` is an active rule. It kills **both** native apps, YouTube and
+YouTube Music, because both talk to the private InnerTube API and nothing else reaches it.
 
-Never uncomment `||googlevideo.com^`, `||ytimg.com^` or `||ggpht.com^`. Those break YouTube Music
-completely.
+**YouTube Music in a browser still works.** Verified in a live session, not assumed: every
+InnerTube call the web player makes goes same origin to `music.youtube.com/youtubei/v1/`
+(player, next, browse, guide, search suggestions) and audio streams from `googlevideo.com`. It
+never touches `youtubei.googleapis.com`.
+
+To go back to the softer behaviour where the apps work, delete that rule and add
+`@@||youtubei.googleapis.com^` to the allowlist.
+
+Never block `googlevideo.com`, `ytimg.com` or `ggpht.com`. Those break YouTube Music on the web
+too.
+
+### Why you cannot block the video but keep the audio
+
+This gets asked a lot, so here is the measurement. Reading the live player response for three
+tracks on 2026-08-28:
+
+| track | audio host | video host |
+|---|---|---|
+| Never Gonna Give You Up | `rr5---sn-ci5gup-cagee` | `rr5---sn-ci5gup-cagee` |
+| Together Forever (remaster) | `rr3---sn-ci5gup-cagee` | `rr3---sn-ci5gup-cagee` |
+| Together Forever (art track) | `rr8---sn-ci5gup-cagr` | `rr8---sn-ci5gup-cagr` |
+
+Audio and video for the same track come from the **identical hostname**, every time. The only
+difference is the `itag` and `mime` query parameters, and DNS never sees a query string. The host
+is also allocated per request, which is why the replica number moves between `rr3`, `rr5` and
+`rr8` within a single session, so there is nothing stable to key on either.
+
+Even a YouTube Music art track, the thing Song mode plays, carries 13 video formats. An art track
+*is* a video: a still image encoded as video with the audio muxed alongside. Song mode is the
+client picking an audio itag from the same manifest on the same host, not a different stream.
 
 ### Plex blocks your own server too
 
@@ -148,9 +174,9 @@ section:
 Deliberately not blocked: `unagi.amazon.com` and friends. That is Prime Video telemetry, but the
 Amazon shopping app uses it too, and blocking telemetry does not stop playback.
 
-**The YouTube app is the one that cannot be fixed.** It only ever resolves
-`youtubei.googleapis.com` and `googlevideo.com`, and YouTube Music needs both. Use Screen Time,
-delete the app, or turn on the strict tier described above.
+**The YouTube app is blocked since v1.3.0**, via `||youtubei.googleapis.com^`. The cost is that
+the YouTube Music app dies with it, since they share that API. YouTube Music in a browser is
+unaffected.
 
 ### If it blocks in the browser but not in apps
 

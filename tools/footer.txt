@@ -46,13 +46,14 @@
 @@||anghami.com^
 @@||iheart.com^
 !
-! Job three: the shared Google infrastructure YouTube Music needs. Not blocked
-! above either, listed for the same merge safety reason.
+! Job three: the shared Google infrastructure YouTube Music on the WEB needs.
+! youtubei.googleapis.com is deliberately absent from this list since v1.3.0,
+! because it is now blocked on purpose to kill the two native apps. The web
+! player does not need it: it calls InnerTube same origin on music.youtube.com.
 !
 @@||accounts.google.com^
 @@||yt3.googleusercontent.com^
 @@||googlevideo.com^
-@@||youtubei.googleapis.com^
 @@||i.ytimg.com^
 !
 ! If you ever merge this with a list that uses $important to block one of the
