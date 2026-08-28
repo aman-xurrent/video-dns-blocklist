@@ -1,5 +1,5 @@
 !
-! Title: Video Entertainment and Torrent DNS Blocklist (all music allowed)
+! Title: Video Entertainment and Torrent DNS Blocklist (compact, all music allowed)
 ! Description: DNS level blocklist for video entertainment: streaming services, live
 !              sports, creator and short video, torrent indexers, trackers, cloud
 !              torrent and debrid services. Audio only music services are left alone
@@ -9,7 +9,7 @@
 ! License: MIT. The YouTube country domain list came from
 !          v2fly/domain-list-community.
 ! Last modified: 2026-08-28T08:50:40.000Z
-! Version: 1.2.0
+! Version: 1.2.0-compact
 ! Total rules: 1902 blocking rules, 36 exception rules
 !
 ! ============================================================================
@@ -39,6 +39,22 @@
 !
 ! ||example.com^     blocks example.com and every subdomain under it.
 ! @@||sub.example.com^   is an exception. It puts one name back.
+! /pattern/          is a regular expression matched against the whole hostname.
+!
+! Why regexes: the AdGuard DNS Personal plan caps you at 1000 filtering rules
+! across every blocklist you have enabled, counted together. This build carries the
+! same coverage as filter.txt in roughly half the rules, and catches mirrors that
+! do not exist yet.
+!
+! Two things about regex rules that are easy to get wrong, both verified against
+! AdGuard's own engine (github.com/AdguardTeam/urlfilter) rather than assumed:
+!
+!   1. They are RE2, not JavaScript, despite what the docs link to. RE2 has no
+!      lookaheads and no backreferences, so there are none in this file.
+!   2. They do NOT match subdomains implicitly. ||1337x.to^ covers www.1337x.to,
+!      but /^1337x\./ does not. Every pattern here starts (^|\.) or similar for
+!      exactly that reason. An earlier draft of this file leaked 1469 of 2964
+!      hostnames to this mistake.
 !
 ! In AdGuard, an exception rule beats a normal blocking rule no matter where the
 ! two rules sit in the file. That is what lets ||youtube.com^ and

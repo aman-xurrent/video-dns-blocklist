@@ -73,19 +73,23 @@ out = []
 for f in ('cur_youtube.txt', 'cur_streaming.txt', 'cur_extra_req.txt', 'cur_torrent.txt'):
     emit_sections(t(f), out)
 
-extra = sorted(set(open(t('upstream_extra.txt')).read().split()))
+# The extended block sourced from The Block List Project was removed in v1.2.0.
+# DNS sweeping proved the domains resolve; it could not prove they are piracy
+# sites. Spot checks found nasa.gov, worldwind.arc.nasa.gov, gutenberg.org,
+# webcast.berkeley.edu, pbs.org and bittorrent.com in there, all legitimate sites
+# that once ran a BitTorrent tracker for lawful distribution. 1148 domains that
+# cannot be audited by hand are not worth six known false positives, so the whole
+# block is gone. filter-compact.txt covers the same ground with regexes instead.
 out += ['!', '! ' + '-'*74,
-        '! Extended coverage: torrent and piracy domains from The Block List Project',
+        '! Removed in v1.2.0: the extended block from The Block List Project',
         '! ' + '-'*74,
-        '! Source: https://github.com/blocklistproject/Lists (piracy.txt and torrent.txt),',
-        '! released into the public domain under the Unlicense.',
-        '! Their raw lists carry a lot of dead weight, so every domain below was resolved on',
-        '! 2026-08-28 and anything that came back NXDOMAIN or landed on a known domain-parking',
-        '! IP was thrown away. Linux distro torrents (torrent.ubuntu.com, Fedora), archive.org',
-        '! and tech news sites were removed by hand. Delete this whole block if you only want',
-        '! the curated sections above.',
+        '! That section carried 1148 upstream domains. Resolving them proved they are',
+        '! alive, not that they are piracy sites. Auditing found nasa.gov, gutenberg.org,',
+        '! pbs.org, webcast.berkeley.edu and bittorrent.com sitting in it, all legitimate',
+        '! sites that once ran a BitTorrent tracker for lawful distribution. The rest',
+        '! could not be checked by hand, so the whole block was dropped rather than',
+        '! shipped on trust. See filter-compact.txt for regex based coverage instead.',
         '!']
-out += ['||%s^' % d for d in extra]
 out.append('')
 
 body = '\n'.join(out)

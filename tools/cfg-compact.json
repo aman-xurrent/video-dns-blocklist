@@ -1,0 +1,3 @@
+{ "name": "Video Entertainment and Torrent DNS Blocklist (compact)",
+  "sources": [{ "source": "filter-compact.txt", "type": "adblock" }],
+  "transformations": ["RemoveComments", "Deduplicate", "Validate"] }

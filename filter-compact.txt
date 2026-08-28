@@ -1,0 +1,741 @@
+!
+! Title: Video Entertainment and Torrent DNS Blocklist (compact, all music allowed)
+! Description: DNS level blocklist for video entertainment: streaming services, live
+!              sports, creator and short video, torrent indexers, trackers, cloud
+!              torrent and debrid services. Audio only music services are left alone
+!              on purpose, YouTube Music included. Written in AdGuard DNS filtering
+!              syntax, the same syntax the AdGuard DNS filter uses.
+! Homepage: https://github.com/aman-xurrent/video-dns-blocklist
+! License: MIT. The YouTube country domain list came from
+!          v2fly/domain-list-community.
+! Last modified: 2026-08-28T09:57:16.000Z
+! Version: 1.2.0-compact
+! Total rules: 485 (123 regex, 324 literal block, 38 exception). Cap is 1000.
+!
+! ============================================================================
+! WHAT THIS BLOCKS
+! ============================================================================
+!
+! The line is drawn at video, not at entertainment in general. Anything you watch
+! is blocked. Anything you only listen to is not.
+!
+! BLOCKED. Video streaming: YouTube, Netflix, Prime Video, Disney+ and JioHotstar,
+! Max, Hulu, Paramount+, Peacock, Apple TV+, Crunchyroll, SonyLIV, Zee5, MX Player,
+! Tubi, Pluto and the rest. Live and creator video: Twitch, Kick, Rumble, TikTok,
+! Dailymotion, Vimeo, Bilibili. The piracy side: torrent index sites, public
+! tracker announce hosts, cloud torrent and debrid services such as webtor.io,
+! Seedr, Bitport, ZbigZ, put.io, Offcloud, Premiumize, Real-Debrid, AllDebrid and
+! TorBox, plus Stremio, unlicensed movie and sports streaming, and game repacks.
+! Also MEGA and Plex, blocked by explicit request rather than by that rule.
+!
+! NOT BLOCKED. Every music service. Spotify, Apple Music, Amazon Music, YouTube
+! Music, SoundCloud, Deezer, Tidal, Pandora, JioSaavn, Gaana, Wynk, Bandcamp,
+! Last.fm, Qobuz, Anghami and the others are all reachable. They are named one by
+! one in the allowlist at the bottom of the file so the intent is explicit.
+!
+! ============================================================================
+! HOW THE SYNTAX WORKS
+! ============================================================================
+!
+! ||example.com^     blocks example.com and every subdomain under it.
+! @@||sub.example.com^   is an exception. It puts one name back.
+! /pattern/          is a regular expression matched against the whole hostname.
+!
+! Why regexes: the AdGuard DNS Personal plan caps you at 1000 filtering rules
+! across every blocklist you have enabled, counted together. This build carries the
+! same coverage as filter.txt in roughly half the rules, and catches mirrors that
+! do not exist yet.
+!
+! Two things about regex rules that are easy to get wrong, both verified against
+! AdGuard's own engine (github.com/AdguardTeam/urlfilter) rather than assumed:
+!
+!   1. They are RE2, not JavaScript, despite what the docs link to. RE2 has no
+!      lookaheads and no backreferences, so there are none in this file.
+!   2. They do NOT match subdomains implicitly. ||1337x.to^ covers www.1337x.to,
+!      but /^1337x\./ does not. Every pattern here starts (^|\.) or similar for
+!      exactly that reason. An earlier draft of this file leaked 1469 of 2964
+!      hostnames to this mistake.
+!
+! In AdGuard, an exception rule beats a normal blocking rule no matter where the
+! two rules sit in the file. That is what lets ||youtube.com^ and
+! @@||music.youtube.com^ live in the same list.
+!
+! Where to load it:
+!   AdGuard Home    Filters > DNS blocklists > Add blocklist (both rule types work)
+!   AdGuard DNS     Custom filtering rules or a custom blocklist URL
+!   Pi-hole         Adlists understand ||domain^ fine, but they do NOT reliably
+!                   understand @@ exceptions. On Pi-hole, add music.youtube.com to
+!                   the Domains > Allow list by hand after adding this list.
+!   NextDNS         Denylist import, then allow music.youtube.com by hand.
+!
+! ============================================================================
+! THE YOUTUBE MUSIC PROBLEM, STATED HONESTLY
+! ============================================================================
+!
+! YouTube and YouTube Music are not separate services underneath. They share the
+! same backend. These four are used by both and are therefore NOT blocked anywhere
+! in this file, on purpose:
+!
+!   googlevideo.com          the actual audio and video streams
+!   youtubei.googleapis.com  the private "InnerTube" API both mobile apps call
+!   ytimg.com and ggpht.com  thumbnails and album art
+!   googleusercontent.com    channel and artist images
+!
+! The consequence you need to know about: because youtubei.googleapis.com and
+! googlevideo.com stay open, the native YouTube app on Android, iOS and smart TVs
+! can still play video. It never needs to resolve youtube.com. What this file does
+! kill is YouTube on the web, in every browser, on every device on your network,
+! and every youtube.com link anyone sends you.
+!
+! DNS filtering cannot do better than that. Splitting YouTube video from YouTube
+! Music at the DNS layer is impossible while they share a backend hostname. If you
+! need the apps gone too, remove them from the device or use an MDM app block.
+!
+! Verified on 2026-08-28 by pulling the real music.youtube.com HTML and reading it:
+!
+!   Works with youtube.com blocked. The player JavaScript is served from
+!   /s/player/ on music.youtube.com itself, not from www.youtube.com. The
+!   InnerTube API call is same origin. Audio comes from googlevideo.com and album
+!   art from yt3.googleusercontent.com, neither of which this file blocks. So
+!   playback, search and your library all work.
+!
+!   BREAKS with youtube.com blocked. Signing in. The sign-in link on
+!   music.youtube.com hands Google a continue URL of
+!   https://www.youtube.com/signin?action_handle_signin=true..., so the browser
+!   is sent to www.youtube.com after you authenticate, and that hostname is
+!   blocked by this file. If you are already signed in, nothing happens. If you
+!   need to sign in fresh, do one of these:
+!     - sign in on the YouTube Music phone app, which uses accounts.google.com
+!       and youtubei.googleapis.com and never touches www.youtube.com, or
+!     - pause the filter, sign in once in the browser, then turn it back on, or
+!     - temporarily add @@||www.youtube.com^ to your rules, sign in, remove it.
+!
+!   Cosmetic only. A few onboarding shelf images are served from
+!   www.youtube.com/img/music/tastebuilder/, so those tiles show as broken
+!   images. Nothing else is affected.
+!
+! ============================================================================
+! OPTIONAL STRICT TIER
+! ============================================================================
+!
+! Uncomment the line below to also block the InnerTube API. That kills the native
+! YouTube app AND the native YouTube Music app, because both talk to it. The
+! YouTube Music WEB player at music.youtube.com keeps working, because on the web
+! InnerTube is same origin and the audio still comes from googlevideo.com.
+!
+! So: strict tier = music in a browser only, no YouTube app at all.
+!
+! ||youtubei.googleapis.com^
+!
+! Do NOT uncomment these. They break YouTube Music completely:
+!
+! ||googlevideo.com^
+! ||ytimg.com^
+! ||ggpht.com^
+!
+! ============================================================================
+! HOW THIS LIST WAS BUILT
+! ============================================================================
+!
+! Every domain in this file was resolved against 1.1.1.1 and 8.8.8.8 on
+! 2026-08-28. Anything that answered NXDOMAIN was dropped, and anything that
+! resolved to a known domain-parking IP was dropped. Domains with no A record at
+! the apex but a live DNS zone were kept, because that is normal for CDN parents
+! like nflxso.net, hdslb.com and aiv-cdn.net where all the traffic is on subdomains.
+!
+! Deliberately NOT blocked, to avoid collateral damage:
+!   amazon.com, apple.com, google.com, googleapis.com, amazonaws.com
+!   archive.org, torrent.ubuntu.com, torrent.fedoraproject.org (legal torrents)
+!   jellyfin and emby (self hosted media servers)
+!   academictorrents.com, legittorrents.info, linuxtracker.org (lawful torrents)
+!   themoviedb.org, thetvdb.com, musicbrainz.org, trakt.tv, imdb.com (metadata
+!     APIs that Jellyfin, Kodi, Radarr and Plex call; blocking them silently
+!     breaks media libraries)
+!   Google Drive, Dropbox, OneDrive (general cloud storage)
+!   every music service, see the allowlist at the bottom
+!
+! Checked on 2026-08-28, because unblocking the music services while blocking the
+! video ones only works if they do not share hostnames:
+!   Amazon Music is the one that looks risky, because Amazon runs both services.
+!   It is not, and the reason is in the names: aiv is Amazon Instant Video, pv is
+!   Prime Video, atv-ps is the Amazon TV Playback Service. Every Amazon hostname
+!   this file blocks is video specific, none of it is shared Amazon plumbing.
+!   Corroborating check: music.amazon.in was fetched on 2026-08-28 and mentions
+!   none of them, loading only music.amazon.*, m.media-amazon.com and CloudFront.
+!   Be honest about the limit of that check though. The page is an 8 KB bootstrap
+!   shell, so it is not the app's full endpoint list. The naming argument is what
+!   carries this, not the grep. If Amazon Music ever does break, capture your DNS
+!   query log while it fails and allowlist whatever Amazon hostname shows up.
+!   Apple Music is music.apple.com and mzstatic.com. Apple TV+ is tv.apple.com.
+!   Different hostnames, no overlap.
+!   Spotify shares nothing with anything blocked here.
+!   YouTube Music is the one real conflict, and it is handled by the exception
+!   rule at the bottom. See the section above for exactly where it leaks.
+!
+! Expected collateral, not a bug: youtube.com/redirect is the hop every link in a
+! YouTube video description goes through, and it is part of youtube.com, so those
+! links die too. Same for youtu.be short links anyone sends you.
+!
+! WHAT CHANGED IN v1.2.0, AND WHY IT MATTERS
+!
+! v1.0 and v1.1 carried an extra 1,148 domains imported from The Block List
+! Project. Every one had been DNS resolved, which proved they were alive. It did
+! not prove they were piracy sites, and that turned out to matter. Sitting in that
+! block were nasa.gov, worldwind.arc.nasa.gov, gutenberg.org, webcast.berkeley.edu,
+! pbs.org and bittorrent.com. All six are legitimate. Each is on a torrent
+! blocklist because it once ran a BitTorrent tracker to hand out something lawful:
+! NASA satellite imagery, Project Gutenberg ebooks, Berkeley lecture recordings.
+!
+! The other 1,142 could not be checked by hand with any confidence, so the whole
+! block was dropped rather than shipped on trust. Six known false positives in a
+! spot check is enough to distrust the source. Coverage of the genuinely piracy
+! shaped domains now comes from the regular expressions in filter-compact.txt,
+! which match on brand and shape instead of on an imported list nobody verified.
+!
+! Piracy mirror domains change every few weeks. The torrent and pirate streaming
+! sections will need a refresh every month or two to stay useful. The licensed
+! streaming section is stable and will not.
+!
+!
+! --------------------------------------------------------------------------
+! Regular expression rules: the compressed half of the list
+! --------------------------------------------------------------------------
+! One regex replaces anywhere from three to several hundred literal domain rules.
+! These cover YouTube country domains, torrent index brands and their rotating
+! mirrors, tracker announce hosts, pirate streaming, anime, sports restreams and
+! game repack sites. Because they match on brand rather than on an exact domain,
+! they also catch next month's mirror, which the literal list could not.
+!
+! Syntax is /pattern/. AdGuard runs Go's regexp package, which is RE2, so there
+! are no lookaheads or backreferences anywhere in here on purpose.
+! Matching is unanchored against the full hostname, which is why almost every
+! pattern below carries an explicit ^ or $.
+!
+/(^|[.-])(with)?youtube\./
+/(^|\.)youtube(kids|gaming|education|fanfest|go|mobilesupport|embeddedplayer|-nocookie|-ui)/
+/(^|\.)(youtu|yt)\.be$/
+/[a-bd-su-z0-9-]torrent/
+/(^|\.)torrent(fu|[a-eg-z0-9-])/
+/[a-z]bittorrent/
+/(^|\.)tracker[0-9]?\./
+/(^|[.-])(ru|re|open|public|bal|brown|chronic|kray|nyaa|aradi|sub|acg|central|turk|z|ayu|greek|metal|mma|spirit|bt)-?tracker/
+/1337x/
+/1377x/
+/(^|\.)1337\./
+/(^|\.)yts(proxies)?\./
+/yify/
+/eztv/
+/nyaa/
+/kickass/
+/demonoid/
+/demonii/
+/pirate(bay|proxy|-bay|browser|iro|club|pc|ic|-share)/
+/rarbg/
+/rargb/
+/soap2day/
+/soaper\./
+/warez/
+/zooqle/
+/zoozle/
+/monova/
+/(bite|bit|dutch|mini|new)nova/
+/nova(hax|mov)/
+/isohunt/
+/magnetdl/
+/avistaz/
+/exoticaz/
+/cinemaz/
+/filelist/
+/(hd|uhd|sd|he|ccf|fdd|hdvn|extreme|power|panthera|nordic|film|porn|learn)bits/
+/(^|\.)ncore\./
+/knaben/
+/(^|\.)bt(4g|arg|bot|db|dig|gigs|junkie|mon|music|r\.|scene|zone|-)/
+/(^|\.)bt[0-9]\.[a-z0-9-]+\.[a-z]/
+/9anime/
+/allanime/
+/anime-faith/
+/anime-legion/
+/animebw/
+/animeby/
+/animeflix/
+/animeforever/
+/animekai/
+/animela/
+/animeowl/
+/animepahe/
+/animesug/
+/animesuki/
+/c1anime/
+/downloadanime/
+/gogoanime/
+/hqanime/
+/crack(ed[a-z]|[^e])/
+/keygen/
+/repack/
+/skidrow/
+/(^|[.-])(123|f|go|look|solar|vega|yes|bolly|hd|see|sock|prime|watch32)movies?/
+/(^|[.-])movie(s[a-z0-9]|[a-eg-rt-z])/
+/serial(coded|keys|number|portal|start|surf)/
+/(^|\.)download(anime|arch|emule|forum|portal|post|space|team|top)/
+/scene(hd|spot|time|x\.|-rush)/
+/thescene/
+/datascene/
+/prescene/
+/[a-z]flix\./
+/(^|\.)flix(dump|flux|hq|tor)/
+/myflixer/
+/manga(dex|fire|go|kakalot|nato|park)/
+/natomanga/
+/(^|\.)kino(-hit|club|mall|mix|mob|x\.|zal)/
+/arenabg/
+/(^|\.)hd(club|china|city|dvdrip|road|source|star|bt\.)/
+/(^|\.)(kat\.cr|katcr\.|katz|thekat\.)/
+/(^|\.)p2p-world\./
+/(^|\.)nnm(club|-club)/
+/putlocker/
+/unblocked/
+/streameast/
+/streamzone/
+/hesgoal/
+/totalsportek/
+/hianime/
+/zorox?\./
+/hurawatch/
+/rutor/
+/audiobookbay/
+/(^|\.)ebook(directory|share|vortex)/
+/blackcats-games/
+/blackhatprotools/
+/passthepopcorn/
+/primewire/
+/secret-cinema/
+/sportsurge/
+/mvgroup/
+/nsanedown/
+/(^|[.-])(watch|tv|top|mega|see|hd|full)series/
+/ettv/
+/torlock/
+/daddylive/
+/cric(free|hd|stream)/
+/(^|\.)livetv[0-9.]/
+/rojadirecta/
+/elamigos/
+/igg-?games/
+/(^|\.)ps[45]pkg/
+/(^|\.)hit[24]k/
+/(^|\.)ani(db|dex|rena|playnow|taku|watch)/
+/hentai/
+/(^|[.-])kiss(asian|anime|cartoon|kh|manga)/
+/(^|[.-])(apunka|oceanof|ova|worldofpc|gazelle)games/
+/hiddenbay/
+/(^|[.-])proxybay/
+/(^|\.)tpb\./
+/(^|[.-])xtr(ea|e)me?(-codes|bytes|hd)/
+/(^|[.-])vip(box|league|row)/
+/(^|[.-])bit(search|porn)/
+/torrends/
+@@/(^|\.)music\.youtube\.com$/
+@@/\.(internal|local|corp|lan|home|intranet)$/
+
+!
+! --------------------------------------------------------------------------
+! Literal rules: services that do not compress safely
+! --------------------------------------------------------------------------
+! Licensed streaming services, their video CDNs, cloud torrent and debrid
+! providers, file lockers, MEGA and Plex. These are one-off brands with no shared
+! pattern, so a regex would either miss them or overreach.
+!
+||1fichier.com^
+||abema.tv^
+||acorn.tv^
+||addatimes.com^
+||aha.video^
+||ahavideo.com^
+||airtel.tv^
+||airtelxstream.in^
+||aiv-cdn.net^
+||aiv-delivery.net^
+||alldebrid.com^
+||altbalaji.com^
+||althub.co.za^
+||altt.co.in^
+||amazonvideo.com^
+||amcplus.com^
+||apkadmin.com^
+||appletv.com^
+||atresplayer.com^
+||atv-ext-eu.amazon.com^
+||atv-ext.amazon.com^
+||atv-ps-eu.amazon.com^
+||atv-ps.amazon.com^
+||bamgrid.com^
+||bigflix.com^
+||bigo.tv^
+||bigolive.tv^
+||biliapi.net^
+||bilibili.com^
+||bilibili.tv^
+||binge.com.au^
+||bitchute.com^
+||bitport.io^
+||britbox.com^
+||btorrent.xyz^
+||buzzheavier.com^
+||byteoversea.com^
+||bytesized-hosting.com^
+||canalplus.com^
+||cbsivideo.com^
+||channel4.com^
+||chaupal.tv^
+||chingari.io^
+||clarovideo.com^
+||clicknupload.click^
+||coupangplay.com^
+||crackle.com^
+||crunchyroll.com^
+||crunchyroll.net^
+||curiositystream.com^
+||dailymotion.com^
+||dailymotion.net^
+||daofile.com^
+||dazn-api.com^
+||dazn.com^
+||ddownload.com^
+||debrid-link.fr^
+||debridmediamanager.com^
+||dediseedbox.com^
+||depositfiles.com^
+||discoveryplus.com^
+||discoveryplus.in^
+||disney-plus.net^
+||disneyplus.com^
+||disneystreaming.com^
+||dlive.tv^
+||dmcdn.net^
+||docubay.com^
+||dropgalaxy.com^
+||drunkenslug.com^
+||dssott.com^
+||easydebrid.com^
+||easynews.com^
+||elfhosted.com^
+||epicon.in^
+||erosnow.com^
+||evoseedbox.com^
+||eweka.nl^
+||feralhosting.com^
+||fikper.com^
+||filefactory.com^
+||filejoker.net^
+||filespace.com^
+||filestream.me^
+||floatplane.com^
+||frugalusenet.com^
+||fubo.tv^
+||fubotv.com^
+||funimation.com^
+||globoplay.globo.com^
+||gofile.io^
+||hbo.com^
+||hbogo.com^
+||hbomax.com^
+||hbomaxcdn.com^
+||hbonow.com^
+||hdslb.com^
+||hitfile.net^
+||hoichoi.tv^
+||hostingby.design^
+||hotstar.com^
+||hotstar.in^
+||hotstarext.com^
+||hulu.com^
+||hulu.tv^
+||huluim.com^
+||hulustream.com^
+||ibytedtos.com^
+||instant.io^
+||iq.com^
+||iqiyi.com^
+||itv.com^
+||itvx.com^
+||jiocinema.com^
+||jiohotstar.com^
+||jtvnw.net^
+||k2s.cc^
+||katfile.com^
+||keep2share.cc^
+||kick.com^
+||kick.tv^
+||klikk.tv^
+||likee.video^
+||linksnappy.com^
+||lionsgateplay.com^
+||lionsgateplus.com^
+||manoramamax.com^
+||max.com^
+||mediasetinfinity.mediaset.it^
+||mega.co.nz^
+||mega.io^
+||mega.nz^
+||mojlivestream.com^
+||molotov.tv^
+||movistarplus.es^
+||mubi.com^
+||multiup.io^
+||musical.ly^
+||mxplayer.in^
+||nebula.tv^
+||neestream.com^
+||netflix.com^
+||netflix.net^
+||netflixdnstest1.com^
+||netflixdnstest2.com^
+||netflixdnstest3.com^
+||newshosting.com^
+||nflxext.com^
+||nflximg.com^
+||nflximg.net^
+||nflxso.net^
+||nflxvideo.net^
+||nicovideo.jp^
+||nitroflare.com^
+||nowtv.com^
+||nzbgeek.info^
+||nzbget.net^
+||nzbplanet.net^
+||odycdn.com^
+||odysee.com^
+||offcloud.com^
+||paramountplus.com^
+||peacocktv.com^
+||philo.com^
+||pixeldrain.com^
+||planetmarathi.com^
+||plex.direct^
+||plex.tv^
+||plexapp.com^
+||pluto.tv^
+||plutotv.net^
+||pplusstatic.com^
+||prefiles.com^
+||premiumize.me^
+||primeflix.co.in^
+||primevideo.com^
+||pulsedmedia.com^
+||put.io^
+||pv-cdn.net^
+||raiplay.it^
+||rakuten.tv^
+||rapidgator.net^
+||rapidseedbox.com^
+||real-debrid.com^
+||rmbl.ws^
+||rumble.cloud^
+||rumble.com^
+||rutube.ru^
+||seedbox.io^
+||seedboxes.cc^
+||seedhost.eu^
+||seedr.cc^
+||shemaroome.com^
+||showtime.com^
+||shudder.com^
+||skyshowtime.com^
+||sling.com^
+||sonyliv.com^
+||sonyliv.in^
+||stage.in^
+||stan.com.au^
+||starplus.com^
+||starz.com^
+||strem.io^
+||stremio.com^
+||subyshare.com^
+||sunnxt.com^
+||takefile.link^
+||tataplay.com^
+||therokuchannel.roku.com^
+||tiktok.com^
+||tiktokcdn-eu.com^
+||tiktokcdn-us.com^
+||tiktokcdn.com^
+||tiktokv.com^
+||tiktokw.us^
+||torbox.app^
+||torrentio.strem.fun^
+||torrentsafe.com^
+||triller.co^
+||trovo.live^
+||ttvnw.net^
+||tubi.tv^
+||tubitv.com^
+||turbobit.net^
+||tv.apple.com^
+||tving.com^
+||tweaknews.eu^
+||twitch.tv^
+||twitchcdn.com^
+||twitchcdn.net^
+||twitchsvc.net^
+||ullu.app^
+||ultraseedbox.com^
+||uploaded.net^
+||uploadgig.com^
+||uploadrar.com^
+||usenetserver.com^
+||usersdrive.com^
+||videoland.com^
+||viki.com^
+||vimeo.com^
+||vimeocdn.com^
+||viu.com^
+||vkvideo.ru^
+||voot.com^
+||vrv.co^
+||vudu.com^
+||watcho.com^
+||wavve.com^
+||webtor.io^
+||webtorrent.io^
+||wetv.vip^
+||whatbox.ca^
+||worldbytez.com^
+||wupfile.com^
+||youku.com^
+||zbigz.com^
+||zee5.com^
+||zee5.in^
+
+!
+! --------------------------------------------------------------------------
+! Literal rules: leftovers the regex pass could not fold in safely
+! --------------------------------------------------------------------------
+! Each of these resisted compression without risking a false positive, so it
+! stayed a literal rule. Correctness beats a lower rule count.
+!
+||720pstream.nu^
+||aither.cc^
+||alpharatio.cc^
+||apollogroup.tv^
+||asurascans.com^
+||attacker.tv^
+||audiences.me^
+||bato.to^
+||beyond-hd.me^
+||bibliotik.me^
+||blutopia.cc^
+||broadcasthe.net^
+||buffstreams.app^
+||cataz.ru^
+||comando.la^
+||comick.io^
+||cs.rin.ru^
+||descargas2020.org^
+||digitalcore.club^
+||dramacool.com.pa^
+||empornium.is^
+||exodus.desync.com^
+||explodie.org^
+||fancode.com^
+||filmywap.com.se^
+||firstrowsports.tv^
+||footybite.cc^
+||gamepciso.com^
+||gload.to^
+||glodls.to^
+||goojara.to^
+||gtdb.to^
+||hitomi.la^
+||idope.top^
+||iptv-org.github.io^
+||lapumia.net^
+||levidia.ch^
+||m4uhd.tv^
+||milkie.cc^
+||morethantv.me^
+||myanonamouse.net^
+||nbastreams.gg^
+||nebulance.io^
+||online-fix.me^
+||open.stealth.si^
+||orpheus.network^
+||pixelcove.me^
+||privatehd.to^
+||projectfreetv.one^
+||racing4everyone.eu^
+||redacted.ch^
+||seedpeer.me^
+||snowfl.com^
+||socceronline.me^
+||speedapp.io^
+||sportplus.live^
+||sstv.one^
+||steamunlocked.net^
+||strikeout.nu^
+||vumoo.to^
+||webcric.com^
+||weebcentral.com^
+||wepzone.net^
+||willow.tv^
+!
+! ============================================================================
+! ALLOWLIST: music stays on, video goes off
+! ============================================================================
+!
+! An AdGuard exception rule beats a plain blocking rule no matter where the two
+! rules sit in the file. Two jobs are done here.
+!
+! Job one: put music.youtube.com back after ||youtube.com^ blocked it.
+!
+@@||music.youtube.com^
+!
+! Job two: state out loud that the audio services stay reachable. None of these
+! are blocked anywhere above, so on their own these lines change nothing today.
+! They exist so the intent survives you merging this file with someone else's
+! blocklist that does block them.
+!
+@@||spotify.com^
+@@||scdn.co^
+@@||spotifycdn.com^
+@@||spotifycdn.net^
+@@||spoti.fi^
+@@||music.apple.com^
+@@||itunes.apple.com^
+@@||mzstatic.com^
+@@||music.amazon.com^
+@@||music.amazon.in^
+@@||music.amazon.co.uk^
+@@||m.media-amazon.com^
+@@||soundcloud.com^
+@@||sndcdn.com^
+@@||deezer.com^
+@@||dzcdn.net^
+@@||tidal.com^
+@@||pandora.com^
+@@||jiosaavn.com^
+@@||saavn.com^
+@@||gaana.com^
+@@||wynk.in^
+@@||audiomack.com^
+@@||bandcamp.com^
+@@||bcbits.com^
+@@||last.fm^
+@@||mixcloud.com^
+@@||qobuz.com^
+@@||anghami.com^
+@@||iheart.com^
+!
+! Job three: the shared Google infrastructure YouTube Music needs. Not blocked
+! above either, listed for the same merge safety reason.
+!
+@@||accounts.google.com^
+@@||yt3.googleusercontent.com^
+@@||googlevideo.com^
+@@||youtubei.googleapis.com^
+@@||i.ytimg.com^
+!
+! If you ever merge this with a list that uses $important to block one of the
+! above, append $important to the matching line here so it wins, for example:
+!     @@||spotify.com^$important
+!
+! End of file.
