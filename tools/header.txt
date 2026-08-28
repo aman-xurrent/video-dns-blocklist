@@ -1,0 +1,162 @@
+!
+! Title: Video Entertainment and Torrent DNS Blocklist (all music allowed)
+! Description: DNS level blocklist for video entertainment: streaming services, live
+!              sports, creator and short video, torrent indexers, trackers, cloud
+!              torrent and debrid services. Audio only music services are left alone
+!              on purpose, YouTube Music included. Written in AdGuard DNS filtering
+!              syntax, the same syntax the AdGuard DNS filter uses.
+! Homepage: https://github.com/aman-xurrent/video-dns-blocklist
+! License: MIT. The extended section is derived from The Block List Project,
+!          which is released into the public domain under the Unlicense.
+! Last modified: 2026-08-28T08:50:40.000Z
+! Version: 1.1.0
+! Total rules: 1902 blocking rules, 36 exception rules
+!
+! ============================================================================
+! WHAT THIS BLOCKS
+! ============================================================================
+!
+! The line is drawn at video, not at entertainment in general. Anything you watch
+! is blocked. Anything you only listen to is not.
+!
+! BLOCKED. Video streaming: YouTube, Netflix, Prime Video, Disney+ and JioHotstar,
+! Max, Hulu, Paramount+, Peacock, Apple TV+, Crunchyroll, SonyLIV, Zee5, MX Player,
+! Tubi, Pluto and the rest. Live and creator video: Twitch, Kick, Rumble, TikTok,
+! Dailymotion, Vimeo, Bilibili. The piracy side: torrent index sites, public
+! tracker announce hosts, cloud torrent and debrid services such as webtor.io,
+! Seedr, Bitport, ZbigZ, put.io, Offcloud, Premiumize, Real-Debrid, AllDebrid and
+! TorBox, plus Stremio, unlicensed movie and sports streaming, and game repacks.
+! Also MEGA and Plex, blocked by explicit request rather than by that rule.
+!
+! NOT BLOCKED. Every music service. Spotify, Apple Music, Amazon Music, YouTube
+! Music, SoundCloud, Deezer, Tidal, Pandora, JioSaavn, Gaana, Wynk, Bandcamp,
+! Last.fm, Qobuz, Anghami and the others are all reachable. They are named one by
+! one in the allowlist at the bottom of the file so the intent is explicit.
+!
+! ============================================================================
+! HOW THE SYNTAX WORKS
+! ============================================================================
+!
+! ||example.com^     blocks example.com and every subdomain under it.
+! @@||sub.example.com^   is an exception. It puts one name back.
+!
+! In AdGuard, an exception rule beats a normal blocking rule no matter where the
+! two rules sit in the file. That is what lets ||youtube.com^ and
+! @@||music.youtube.com^ live in the same list.
+!
+! Where to load it:
+!   AdGuard Home    Filters > DNS blocklists > Add blocklist (both rule types work)
+!   AdGuard DNS     Custom filtering rules or a custom blocklist URL
+!   Pi-hole         Adlists understand ||domain^ fine, but they do NOT reliably
+!                   understand @@ exceptions. On Pi-hole, add music.youtube.com to
+!                   the Domains > Allow list by hand after adding this list.
+!   NextDNS         Denylist import, then allow music.youtube.com by hand.
+!
+! ============================================================================
+! THE YOUTUBE MUSIC PROBLEM, STATED HONESTLY
+! ============================================================================
+!
+! YouTube and YouTube Music are not separate services underneath. They share the
+! same backend. These four are used by both and are therefore NOT blocked anywhere
+! in this file, on purpose:
+!
+!   googlevideo.com          the actual audio and video streams
+!   youtubei.googleapis.com  the private "InnerTube" API both mobile apps call
+!   ytimg.com and ggpht.com  thumbnails and album art
+!   googleusercontent.com    channel and artist images
+!
+! The consequence you need to know about: because youtubei.googleapis.com and
+! googlevideo.com stay open, the native YouTube app on Android, iOS and smart TVs
+! can still play video. It never needs to resolve youtube.com. What this file does
+! kill is YouTube on the web, in every browser, on every device on your network,
+! and every youtube.com link anyone sends you.
+!
+! DNS filtering cannot do better than that. Splitting YouTube video from YouTube
+! Music at the DNS layer is impossible while they share a backend hostname. If you
+! need the apps gone too, remove them from the device or use an MDM app block.
+!
+! Verified on 2026-08-28 by pulling the real music.youtube.com HTML and reading it:
+!
+!   Works with youtube.com blocked. The player JavaScript is served from
+!   /s/player/ on music.youtube.com itself, not from www.youtube.com. The
+!   InnerTube API call is same origin. Audio comes from googlevideo.com and album
+!   art from yt3.googleusercontent.com, neither of which this file blocks. So
+!   playback, search and your library all work.
+!
+!   BREAKS with youtube.com blocked. Signing in. The sign-in link on
+!   music.youtube.com hands Google a continue URL of
+!   https://www.youtube.com/signin?action_handle_signin=true..., so the browser
+!   is sent to www.youtube.com after you authenticate, and that hostname is
+!   blocked by this file. If you are already signed in, nothing happens. If you
+!   need to sign in fresh, do one of these:
+!     - sign in on the YouTube Music phone app, which uses accounts.google.com
+!       and youtubei.googleapis.com and never touches www.youtube.com, or
+!     - pause the filter, sign in once in the browser, then turn it back on, or
+!     - temporarily add @@||www.youtube.com^ to your rules, sign in, remove it.
+!
+!   Cosmetic only. A few onboarding shelf images are served from
+!   www.youtube.com/img/music/tastebuilder/, so those tiles show as broken
+!   images. Nothing else is affected.
+!
+! ============================================================================
+! OPTIONAL STRICT TIER
+! ============================================================================
+!
+! Uncomment the line below to also block the InnerTube API. That kills the native
+! YouTube app AND the native YouTube Music app, because both talk to it. The
+! YouTube Music WEB player at music.youtube.com keeps working, because on the web
+! InnerTube is same origin and the audio still comes from googlevideo.com.
+!
+! So: strict tier = music in a browser only, no YouTube app at all.
+!
+! ||youtubei.googleapis.com^
+!
+! Do NOT uncomment these. They break YouTube Music completely:
+!
+! ||googlevideo.com^
+! ||ytimg.com^
+! ||ggpht.com^
+!
+! ============================================================================
+! HOW THIS LIST WAS BUILT
+! ============================================================================
+!
+! Every domain in this file was resolved against 1.1.1.1 and 8.8.8.8 on
+! 2026-08-28. Anything that answered NXDOMAIN was dropped, and anything that
+! resolved to a known domain-parking IP was dropped. Domains with no A record at
+! the apex but a live DNS zone were kept, because that is normal for CDN parents
+! like nflxso.net, hdslb.com and aiv-cdn.net where all the traffic is on subdomains.
+!
+! Deliberately NOT blocked, to avoid collateral damage:
+!   amazon.com, apple.com, google.com, googleapis.com, amazonaws.com
+!   archive.org, torrent.ubuntu.com, torrent.fedoraproject.org (legal torrents)
+!   jellyfin and emby (self hosted media servers)
+!   Google Drive, Dropbox, OneDrive (general cloud storage)
+!   every music service, see the allowlist at the bottom
+!
+! Checked on 2026-08-28, because unblocking the music services while blocking the
+! video ones only works if they do not share hostnames:
+!   Amazon Music is the one that looks risky, because Amazon runs both services.
+!   It is not, and the reason is in the names: aiv is Amazon Instant Video, pv is
+!   Prime Video, atv-ps is the Amazon TV Playback Service. Every Amazon hostname
+!   this file blocks is video specific, none of it is shared Amazon plumbing.
+!   Corroborating check: music.amazon.in was fetched on 2026-08-28 and mentions
+!   none of them, loading only music.amazon.*, m.media-amazon.com and CloudFront.
+!   Be honest about the limit of that check though. The page is an 8 KB bootstrap
+!   shell, so it is not the app's full endpoint list. The naming argument is what
+!   carries this, not the grep. If Amazon Music ever does break, capture your DNS
+!   query log while it fails and allowlist whatever Amazon hostname shows up.
+!   Apple Music is music.apple.com and mzstatic.com. Apple TV+ is tv.apple.com.
+!   Different hostnames, no overlap.
+!   Spotify shares nothing with anything blocked here.
+!   YouTube Music is the one real conflict, and it is handled by the exception
+!   rule at the bottom. See the section above for exactly where it leaks.
+!
+! Expected collateral, not a bug: youtube.com/redirect is the hop every link in a
+! YouTube video description goes through, and it is part of youtube.com, so those
+! links die too. Same for youtu.be short links anyone sends you.
+!
+! Piracy mirror domains change every few weeks. The torrent and pirate streaming
+! sections will need a refresh every month or two to stay useful. The licensed
+! streaming section is stable and will not.
+!

@@ -1,0 +1,62 @@
+!
+! ============================================================================
+! ALLOWLIST: music stays on, video goes off
+! ============================================================================
+!
+! An AdGuard exception rule beats a plain blocking rule no matter where the two
+! rules sit in the file. Two jobs are done here.
+!
+! Job one: put music.youtube.com back after ||youtube.com^ blocked it.
+!
+@@||music.youtube.com^
+!
+! Job two: state out loud that the audio services stay reachable. None of these
+! are blocked anywhere above, so on their own these lines change nothing today.
+! They exist so the intent survives you merging this file with someone else's
+! blocklist that does block them.
+!
+@@||spotify.com^
+@@||scdn.co^
+@@||spotifycdn.com^
+@@||spotifycdn.net^
+@@||spoti.fi^
+@@||music.apple.com^
+@@||itunes.apple.com^
+@@||mzstatic.com^
+@@||music.amazon.com^
+@@||music.amazon.in^
+@@||music.amazon.co.uk^
+@@||m.media-amazon.com^
+@@||soundcloud.com^
+@@||sndcdn.com^
+@@||deezer.com^
+@@||dzcdn.net^
+@@||tidal.com^
+@@||pandora.com^
+@@||jiosaavn.com^
+@@||saavn.com^
+@@||gaana.com^
+@@||wynk.in^
+@@||audiomack.com^
+@@||bandcamp.com^
+@@||bcbits.com^
+@@||last.fm^
+@@||mixcloud.com^
+@@||qobuz.com^
+@@||anghami.com^
+@@||iheart.com^
+!
+! Job three: the shared Google infrastructure YouTube Music needs. Not blocked
+! above either, listed for the same merge safety reason.
+!
+@@||accounts.google.com^
+@@||yt3.googleusercontent.com^
+@@||googlevideo.com^
+@@||youtubei.googleapis.com^
+@@||i.ytimg.com^
+!
+! If you ever merge this with a list that uses $important to block one of the
+! above, append $important to the matching line here so it wins, for example:
+!     @@||spotify.com^$important
+!
+! End of file.

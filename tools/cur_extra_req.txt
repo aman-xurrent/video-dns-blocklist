@@ -1,0 +1,7 @@
+#SECTION Blocked by explicit request: cloud storage and self hosted media
+mega.nz
+mega.io
+mega.co.nz
+plex.tv
+plex.direct
+plexapp.com

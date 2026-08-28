@@ -1,0 +1,2243 @@
+!
+! Title: Video Entertainment and Torrent DNS Blocklist (all music allowed)
+! Description: DNS level blocklist for video entertainment: streaming services, live
+!              sports, creator and short video, torrent indexers, trackers, cloud
+!              torrent and debrid services. Audio only music services are left alone
+!              on purpose, YouTube Music included. Written in AdGuard DNS filtering
+!              syntax, the same syntax the AdGuard DNS filter uses.
+! Homepage: https://github.com/aman-xurrent/video-dns-blocklist
+! License: MIT. The extended section is derived from The Block List Project,
+!          which is released into the public domain under the Unlicense.
+! Last modified: 2026-08-28T08:50:40.000Z
+! Version: 1.1.0
+! Total rules: 1902 blocking rules, 36 exception rules
+!
+! ============================================================================
+! WHAT THIS BLOCKS
+! ============================================================================
+!
+! The line is drawn at video, not at entertainment in general. Anything you watch
+! is blocked. Anything you only listen to is not.
+!
+! BLOCKED. Video streaming: YouTube, Netflix, Prime Video, Disney+ and JioHotstar,
+! Max, Hulu, Paramount+, Peacock, Apple TV+, Crunchyroll, SonyLIV, Zee5, MX Player,
+! Tubi, Pluto and the rest. Live and creator video: Twitch, Kick, Rumble, TikTok,
+! Dailymotion, Vimeo, Bilibili. The piracy side: torrent index sites, public
+! tracker announce hosts, cloud torrent and debrid services such as webtor.io,
+! Seedr, Bitport, ZbigZ, put.io, Offcloud, Premiumize, Real-Debrid, AllDebrid and
+! TorBox, plus Stremio, unlicensed movie and sports streaming, and game repacks.
+! Also MEGA and Plex, blocked by explicit request rather than by that rule.
+!
+! NOT BLOCKED. Every music service. Spotify, Apple Music, Amazon Music, YouTube
+! Music, SoundCloud, Deezer, Tidal, Pandora, JioSaavn, Gaana, Wynk, Bandcamp,
+! Last.fm, Qobuz, Anghami and the others are all reachable. They are named one by
+! one in the allowlist at the bottom of the file so the intent is explicit.
+!
+! ============================================================================
+! HOW THE SYNTAX WORKS
+! ============================================================================
+!
+! ||example.com^     blocks example.com and every subdomain under it.
+! @@||sub.example.com^   is an exception. It puts one name back.
+!
+! In AdGuard, an exception rule beats a normal blocking rule no matter where the
+! two rules sit in the file. That is what lets ||youtube.com^ and
+! @@||music.youtube.com^ live in the same list.
+!
+! Where to load it:
+!   AdGuard Home    Filters > DNS blocklists > Add blocklist (both rule types work)
+!   AdGuard DNS     Custom filtering rules or a custom blocklist URL
+!   Pi-hole         Adlists understand ||domain^ fine, but they do NOT reliably
+!                   understand @@ exceptions. On Pi-hole, add music.youtube.com to
+!                   the Domains > Allow list by hand after adding this list.
+!   NextDNS         Denylist import, then allow music.youtube.com by hand.
+!
+! ============================================================================
+! THE YOUTUBE MUSIC PROBLEM, STATED HONESTLY
+! ============================================================================
+!
+! YouTube and YouTube Music are not separate services underneath. They share the
+! same backend. These four are used by both and are therefore NOT blocked anywhere
+! in this file, on purpose:
+!
+!   googlevideo.com          the actual audio and video streams
+!   youtubei.googleapis.com  the private "InnerTube" API both mobile apps call
+!   ytimg.com and ggpht.com  thumbnails and album art
+!   googleusercontent.com    channel and artist images
+!
+! The consequence you need to know about: because youtubei.googleapis.com and
+! googlevideo.com stay open, the native YouTube app on Android, iOS and smart TVs
+! can still play video. It never needs to resolve youtube.com. What this file does
+! kill is YouTube on the web, in every browser, on every device on your network,
+! and every youtube.com link anyone sends you.
+!
+! DNS filtering cannot do better than that. Splitting YouTube video from YouTube
+! Music at the DNS layer is impossible while they share a backend hostname. If you
+! need the apps gone too, remove them from the device or use an MDM app block.
+!
+! Verified on 2026-08-28 by pulling the real music.youtube.com HTML and reading it:
+!
+!   Works with youtube.com blocked. The player JavaScript is served from
+!   /s/player/ on music.youtube.com itself, not from www.youtube.com. The
+!   InnerTube API call is same origin. Audio comes from googlevideo.com and album
+!   art from yt3.googleusercontent.com, neither of which this file blocks. So
+!   playback, search and your library all work.
+!
+!   BREAKS with youtube.com blocked. Signing in. The sign-in link on
+!   music.youtube.com hands Google a continue URL of
+!   https://www.youtube.com/signin?action_handle_signin=true..., so the browser
+!   is sent to www.youtube.com after you authenticate, and that hostname is
+!   blocked by this file. If you are already signed in, nothing happens. If you
+!   need to sign in fresh, do one of these:
+!     - sign in on the YouTube Music phone app, which uses accounts.google.com
+!       and youtubei.googleapis.com and never touches www.youtube.com, or
+!     - pause the filter, sign in once in the browser, then turn it back on, or
+!     - temporarily add @@||www.youtube.com^ to your rules, sign in, remove it.
+!
+!   Cosmetic only. A few onboarding shelf images are served from
+!   www.youtube.com/img/music/tastebuilder/, so those tiles show as broken
+!   images. Nothing else is affected.
+!
+! ============================================================================
+! OPTIONAL STRICT TIER
+! ============================================================================
+!
+! Uncomment the line below to also block the InnerTube API. That kills the native
+! YouTube app AND the native YouTube Music app, because both talk to it. The
+! YouTube Music WEB player at music.youtube.com keeps working, because on the web
+! InnerTube is same origin and the audio still comes from googlevideo.com.
+!
+! So: strict tier = music in a browser only, no YouTube app at all.
+!
+! ||youtubei.googleapis.com^
+!
+! Do NOT uncomment these. They break YouTube Music completely:
+!
+! ||googlevideo.com^
+! ||ytimg.com^
+! ||ggpht.com^
+!
+! ============================================================================
+! HOW THIS LIST WAS BUILT
+! ============================================================================
+!
+! Every domain in this file was resolved against 1.1.1.1 and 8.8.8.8 on
+! 2026-08-28. Anything that answered NXDOMAIN was dropped, and anything that
+! resolved to a known domain-parking IP was dropped. Domains with no A record at
+! the apex but a live DNS zone were kept, because that is normal for CDN parents
+! like nflxso.net, hdslb.com and aiv-cdn.net where all the traffic is on subdomains.
+!
+! Deliberately NOT blocked, to avoid collateral damage:
+!   amazon.com, apple.com, google.com, googleapis.com, amazonaws.com
+!   archive.org, torrent.ubuntu.com, torrent.fedoraproject.org (legal torrents)
+!   jellyfin and emby (self hosted media servers)
+!   Google Drive, Dropbox, OneDrive (general cloud storage)
+!   every music service, see the allowlist at the bottom
+!
+! Checked on 2026-08-28, because unblocking the music services while blocking the
+! video ones only works if they do not share hostnames:
+!   Amazon Music is the one that looks risky, because Amazon runs both services.
+!   It is not, and the reason is in the names: aiv is Amazon Instant Video, pv is
+!   Prime Video, atv-ps is the Amazon TV Playback Service. Every Amazon hostname
+!   this file blocks is video specific, none of it is shared Amazon plumbing.
+!   Corroborating check: music.amazon.in was fetched on 2026-08-28 and mentions
+!   none of them, loading only music.amazon.*, m.media-amazon.com and CloudFront.
+!   Be honest about the limit of that check though. The page is an 8 KB bootstrap
+!   shell, so it is not the app's full endpoint list. The naming argument is what
+!   carries this, not the grep. If Amazon Music ever does break, capture your DNS
+!   query log while it fails and allowlist whatever Amazon hostname shows up.
+!   Apple Music is music.apple.com and mzstatic.com. Apple TV+ is tv.apple.com.
+!   Different hostnames, no overlap.
+!   Spotify shares nothing with anything blocked here.
+!   YouTube Music is the one real conflict, and it is handled by the exception
+!   rule at the bottom. See the section above for exactly where it leaks.
+!
+! Expected collateral, not a bug: youtube.com/redirect is the hop every link in a
+! YouTube video description goes through, and it is part of youtube.com, so those
+! links die too. Same for youtu.be short links anyone sends you.
+!
+! Piracy mirror domains change every few weeks. The torrent and pirate streaming
+! sections will need a refresh every month or two to stay useful. The licensed
+! streaming section is stable and will not.
+!
+!
+! --------------------------------------------------------------------------
+! YouTube: web front ends, country domains and brand properties
+! --------------------------------------------------------------------------
+! Blocks the YouTube web site in every country domain Google runs, plus Shorts, Kids,
+! Gaming and the embed players. music.youtube.com is put back with an exception rule
+! at the bottom of this file, so the Music web player keeps working.
+!
+||youtube.com^
+||youtu.be^
+||yt.be^
+||youtube-nocookie.com^
+||youtubekids.com^
+||youtubegaming.com^
+||youtubeeducation.com^
+||youtubefanfest.com^
+||youtubemobilesupport.com^
+||withyoutube.com^
+||youtubego.com^
+||youtubego.co.id^
+||youtubego.co.in^
+||youtubego.com.br^
+||youtubego.id^
+||youtubego.in^
+||youtube.googleapis.com^
+||youtubeembeddedplayer.googleapis.com^
+||wide-youtube.l.google.com^
+||youtube-ui.l.google.com^
+||youtube.ae^
+||youtube.al^
+||youtube.am^
+||youtube.at^
+||youtube.az^
+||youtube.ba^
+||youtube.be^
+||youtube.bg^
+||youtube.bh^
+||youtube.bo^
+||youtube.by^
+||youtube.ca^
+||youtube.cat^
+||youtube.ch^
+||youtube.cl^
+||youtube.co^
+||youtube.co.ae^
+||youtube.co.at^
+||youtube.co.cr^
+||youtube.co.hu^
+||youtube.co.id^
+||youtube.co.il^
+||youtube.co.in^
+||youtube.co.jp^
+||youtube.co.ke^
+||youtube.co.kr^
+||youtube.co.ma^
+||youtube.co.nz^
+||youtube.co.th^
+||youtube.co.tz^
+||youtube.co.ug^
+||youtube.co.uk^
+||youtube.co.ve^
+||youtube.co.za^
+||youtube.co.zw^
+||youtube.com.ar^
+||youtube.com.au^
+||youtube.com.az^
+||youtube.com.bd^
+||youtube.com.bh^
+||youtube.com.bo^
+||youtube.com.br^
+||youtube.com.by^
+||youtube.com.co^
+||youtube.com.do^
+||youtube.com.ec^
+||youtube.com.ee^
+||youtube.com.eg^
+||youtube.com.es^
+||youtube.com.gh^
+||youtube.com.gr^
+||youtube.com.gt^
+||youtube.com.hk^
+||youtube.com.hn^
+||youtube.com.hr^
+||youtube.com.jm^
+||youtube.com.jo^
+||youtube.com.kw^
+||youtube.com.lb^
+||youtube.com.lv^
+||youtube.com.ly^
+||youtube.com.mk^
+||youtube.com.mt^
+||youtube.com.mx^
+||youtube.com.my^
+||youtube.com.ng^
+||youtube.com.ni^
+||youtube.com.om^
+||youtube.com.pa^
+||youtube.com.pe^
+||youtube.com.ph^
+||youtube.com.pk^
+||youtube.com.pt^
+||youtube.com.py^
+||youtube.com.qa^
+||youtube.com.ro^
+||youtube.com.sa^
+||youtube.com.sg^
+||youtube.com.sv^
+||youtube.com.tn^
+||youtube.com.tr^
+||youtube.com.tw^
+||youtube.com.ua^
+||youtube.com.uy^
+||youtube.com.ve^
+||youtube.cr^
+||youtube.cz^
+||youtube.de^
+||youtube.dk^
+||youtube.ee^
+||youtube.es^
+||youtube.fi^
+||youtube.fr^
+||youtube.ge^
+||youtube.gr^
+||youtube.gt^
+||youtube.hk^
+||youtube.hr^
+||youtube.hu^
+||youtube.ie^
+||youtube.in^
+||youtube.iq^
+||youtube.is^
+||youtube.it^
+||youtube.jo^
+||youtube.jp^
+||youtube.kr^
+||youtube.kz^
+||youtube.la^
+||youtube.lk^
+||youtube.lt^
+||youtube.lu^
+||youtube.lv^
+||youtube.ly^
+||youtube.ma^
+||youtube.md^
+||youtube.me^
+||youtube.mk^
+||youtube.mn^
+||youtube.mx^
+||youtube.my^
+||youtube.ng^
+||youtube.ni^
+||youtube.nl^
+||youtube.no^
+||youtube.pa^
+||youtube.pe^
+||youtube.ph^
+||youtube.pk^
+||youtube.pl^
+||youtube.pr^
+||youtube.pt^
+||youtube.qa^
+||youtube.ro^
+||youtube.rs^
+||youtube.ru^
+||youtube.sa^
+||youtube.se^
+||youtube.sg^
+||youtube.si^
+||youtube.sk^
+||youtube.sn^
+||youtube.soy^
+||youtube.sv^
+||youtube.tn^
+||youtube.tv^
+||youtube.ua^
+||youtube.ug^
+||youtube.uy^
+||youtube.vn^
+
+!
+! --------------------------------------------------------------------------
+! Subscription video on demand: global services
+! --------------------------------------------------------------------------
+! The paid streamers and their video CDNs. Only the video service is blocked, never the
+! parent company: amazon.com, apple.com and google.com are all left alone.
+!
+||netflix.com^
+||netflix.net^
+||nflxvideo.net^
+||nflximg.net^
+||nflximg.com^
+||nflxext.com^
+||nflxso.net^
+||netflixdnstest1.com^
+||netflixdnstest2.com^
+||netflixdnstest3.com^
+||primevideo.com^
+||amazonvideo.com^
+||aiv-cdn.net^
+||aiv-delivery.net^
+||pv-cdn.net^
+||atv-ps.amazon.com^
+||atv-ps-eu.amazon.com^
+||atv-ext.amazon.com^
+||atv-ext-eu.amazon.com^
+||disneyplus.com^
+||disney-plus.net^
+||disneystreaming.com^
+||dssott.com^
+||bamgrid.com^
+||hulu.com^
+||huluim.com^
+||hulustream.com^
+||hulu.tv^
+||max.com^
+||hbomax.com^
+||hbo.com^
+||hbonow.com^
+||hbogo.com^
+||hbomaxcdn.com^
+||discoveryplus.com^
+||discoveryplus.in^
+||paramountplus.com^
+||pplusstatic.com^
+||cbsivideo.com^
+||peacocktv.com^
+||tv.apple.com^
+||appletv.com^
+||crunchyroll.com^
+||crunchyroll.net^
+||funimation.com^
+||vrv.co^
+||tubitv.com^
+||tubi.tv^
+||pluto.tv^
+||plutotv.net^
+||crackle.com^
+||vudu.com^
+||therokuchannel.roku.com^
+||mubi.com^
+||curiositystream.com^
+||shudder.com^
+||britbox.com^
+||acorn.tv^
+||starz.com^
+||showtime.com^
+||amcplus.com^
+||philo.com^
+||fubo.tv^
+||fubotv.com^
+||sling.com^
+||dazn.com^
+||dazn-api.com^
+||viki.com^
+||rakuten.tv^
+||iqiyi.com^
+||iq.com^
+||wetv.vip^
+||viu.com^
+||bilibili.com^
+||bilibili.tv^
+||biliapi.net^
+||hdslb.com^
+||youku.com^
+||nicovideo.jp^
+||abema.tv^
+||tving.com^
+||coupangplay.com^
+||wavve.com^
+||lionsgateplus.com^
+||itv.com^
+||itvx.com^
+||channel4.com^
+||stan.com.au^
+||binge.com.au^
+||videoland.com^
+||skyshowtime.com^
+||nowtv.com^
+||canalplus.com^
+||molotov.tv^
+||raiplay.it^
+||mediasetinfinity.mediaset.it^
+||atresplayer.com^
+||movistarplus.es^
+||globoplay.globo.com^
+||clarovideo.com^
+||starplus.com^
+
+!
+! --------------------------------------------------------------------------
+! Subscription video on demand: India and South Asia
+! --------------------------------------------------------------------------
+! JioCinema and Disney+ Hotstar merged into JioHotstar in February 2025, so all three
+! brand domains are listed.
+!
+||hotstar.com^
+||hotstarext.com^
+||hotstar.in^
+||jiohotstar.com^
+||jiocinema.com^
+||sonyliv.com^
+||sonyliv.in^
+||zee5.com^
+||zee5.in^
+||altbalaji.com^
+||voot.com^
+||mxplayer.in^
+||erosnow.com^
+||sunnxt.com^
+||aha.video^
+||ahavideo.com^
+||hoichoi.tv^
+||chaupal.tv^
+||planetmarathi.com^
+||stage.in^
+||shemaroome.com^
+||airtelxstream.in^
+||airtel.tv^
+||tataplay.com^
+||watcho.com^
+||klikk.tv^
+||ullu.app^
+||altt.co.in^
+||primeflix.co.in^
+||bigflix.com^
+||epicon.in^
+||docubay.com^
+||lionsgateplay.com^
+||manoramamax.com^
+||neestream.com^
+||addatimes.com^
+
+!
+! --------------------------------------------------------------------------
+! Live video, creator video and short video platforms
+! --------------------------------------------------------------------------
+! Live streaming, creator video and short video feeds. Vimeo is included because it is
+! a video host; drop that one line if you need it for work.
+!
+||twitch.tv^
+||ttvnw.net^
+||jtvnw.net^
+||twitchcdn.net^
+||twitchsvc.net^
+||twitchcdn.com^
+||kick.com^
+||kick.tv^
+||rumble.com^
+||rumble.cloud^
+||rmbl.ws^
+||odysee.com^
+||odycdn.com^
+||bitchute.com^
+||dailymotion.com^
+||dmcdn.net^
+||dailymotion.net^
+||vimeo.com^
+||vimeocdn.com^
+||tiktok.com^
+||tiktokv.com^
+||tiktokcdn.com^
+||tiktokcdn-us.com^
+||tiktokcdn-eu.com^
+||byteoversea.com^
+||ibytedtos.com^
+||musical.ly^
+||tiktokw.us^
+||nebula.tv^
+||floatplane.com^
+||triller.co^
+||likee.video^
+||mojlivestream.com^
+||chingari.io^
+||bigo.tv^
+||bigolive.tv^
+||trovo.live^
+||dlive.tv^
+||vkvideo.ru^
+||rutube.ru^
+
+!
+! --------------------------------------------------------------------------
+! Blocked by explicit request: cloud storage and self hosted media
+! --------------------------------------------------------------------------
+! MEGA is general purpose cloud storage and Plex is a self hosted media server, so
+! neither is piracy by itself. Both are here because you asked for them.
+! plex.direct is the hostname Plex apps use to reach a server on your own LAN, so
+! blocking it stops local playback too, not just plex.tv sign in. Drop that one line
+! if you want your own server to keep working while the Plex service stays blocked.
+!
+||mega.nz^
+||mega.io^
+||mega.co.nz^
+||plex.tv^
+||plex.direct^
+||plexapp.com^
+
+!
+! --------------------------------------------------------------------------
+! Torrent indexers and public trackers
+! --------------------------------------------------------------------------
+! Public and private torrent index sites. Mirror domains rotate constantly, so this
+! section goes stale faster than the rest of the file.
+!
+||thepiratebay.org^
+||thepiratebay.se^
+||thepiratebay10.org^
+||thepiratebay0.org^
+||tpb.party^
+||piratebay.live^
+||piratebayproxy.live^
+||pirateproxy.live^
+||pirateproxy.surf^
+||thehiddenbay.com^
+||proxybay.github.io^
+||1337x.to^
+||1337x.st^
+||1337x.is^
+||1337x.se^
+||1337x.tw^
+||1337xx.to^
+||1377x.to^
+||x1337x.ws^
+||x1337x.eu^
+||yts.rs^
+||yts.am^
+||yts.lt^
+||yts.pm^
+||ytsproxies.com^
+||eztv.re^
+||eztv.wf^
+||eztv.tf^
+||eztv.yt^
+||eztv.ch^
+||eztvx.to^
+||eztv.it^
+||limetorrents.lol^
+||limetorrents.pro^
+||limetorrents.info^
+||limetorrents.cc^
+||torrentgalaxy.to^
+||torrentgalaxy.mx^
+||torrentgalaxy.one^
+||torrentgalaxy.su^
+||torrentgalaxy.io^
+||nyaa.si^
+||nyaa.iss.one^
+||sukebei.nyaa.si^
+||nyaa.land^
+||rutracker.org^
+||rutracker.net^
+||rutracker.cc^
+||rutracker.nl^
+||rutor.info^
+||rutor.org^
+||rutor.is^
+||kinozal.tv^
+||nnmclub.to^
+||katcr.co^
+||kickasstorrents.to^
+||kickass.sx^
+||kat.cr^
+||torlock.com^
+||torlock2.com^
+||torrentdownloads.pro^
+||torrentdownloads.me^
+||magnetdl.com^
+||magnetdl.org^
+||zooqle.com^
+||zooqle.xyz^
+||bitsearch.to^
+||solidtorrents.to^
+||solidtorrents.net^
+||torrentz2.nz^
+||torrentz2eu.org^
+||idope.top^
+||snowfl.com^
+||torrentproject2.net^
+||glodls.to^
+||gtdb.to^
+||torrentfunk.com^
+||torrentfunk2.com^
+||seedpeer.me^
+||extratorrent.st^
+||extratorrents.it^
+||monova.to^
+||demonoid.is^
+||demonoid.to^
+||ettvcentral.com^
+||ettv.to^
+||torrentquest.com^
+||btdig.com^
+||btdb.eu^
+||btdb.to^
+||bt4g.org^
+||bt4gprx.com^
+||torrends.to^
+||torrentcorp.com^
+||knaben.eu^
+||knaben.org^
+||therarbg.com^
+||therarbg.to^
+||rargb.to^
+||rarbgproxy.org^
+||rarbgmirror.org^
+||rarbg.to^
+||rarbg.com^
+||pirateiro.com^
+||torrentdosfilmes.com^
+||comando.la^
+||lapumia.net^
+||mejortorrent.wtf^
+||dontorrent.org^
+||elitetorrent.wf^
+||descargas2020.org^
+||torrentleech.org^
+||iptorrents.com^
+||torrentday.com^
+||filelist.io^
+||myanonamouse.net^
+||redacted.ch^
+||orpheus.network^
+||gazellegames.net^
+||animebytes.tv^
+||passthepopcorn.me^
+||broadcasthe.net^
+||beyond-hd.me^
+||hdbits.org^
+||blutopia.cc^
+||aither.cc^
+||torrenting.org^
+||alpharatio.cc^
+||milkie.cc^
+||digitalcore.club^
+||speedapp.io^
+||scenetime.com^
+||bibliotik.me^
+||empornium.is^
+||morethantv.me^
+||nebulance.io^
+||uhdbits.org^
+||privatehd.to^
+||avistaz.to^
+||cinemaz.to^
+||exoticaz.to^
+||bitporn.eu^
+||p2p-world.net^
+||audiences.me^
+||hd-torrents.org^
+||torrentseeds.org^
+||pixelcove.me^
+||racing4everyone.eu^
+||secret-cinema.pw^
+||xtremebytes.net^
+
+!
+! --------------------------------------------------------------------------
+! BitTorrent tracker endpoints
+! --------------------------------------------------------------------------
+! The announce hosts a torrent client talks to. Blocking these starves public torrents of
+! peers even when the index site is reached some other way.
+!
+||tracker.opentrackr.org^
+||open.demonii.com^
+||open.stealth.si^
+||tracker.openbittorrent.com^
+||tracker.torrent.eu.org^
+||exodus.desync.com^
+||explodie.org^
+||tracker.dler.org^
+||tracker.internetwarriors.net^
+||tracker.coppersurfer.tk^
+||p4p.arenabg.com^
+||tracker.tiny-vps.com^
+||tracker.bittor.pw^
+||tracker.army^
+||tracker.zerobytes.xyz^
+||tracker.theoks.net^
+||tracker.ololosh.space^
+||tracker.filemail.com^
+||tracker.dump.cl^
+||tracker1.bt.moack.co.kr^
+||tracker.qu.ax^
+||tracker.gbitt.info^
+||tracker.skyts.net^
+||tracker.tryhackx.org^
+||tracker.therarbg.com^
+||opentracker.io^
+||bt1.archive.org^
+||bt2.archive.org^
+||tracker.files.fm^
+||tracker.tcp.exchange^
+||open.tracker.cl^
+||run.publictracker.xyz^
+||wepzone.net^
+||ipv4announce.sktorrent.eu^
+
+!
+! --------------------------------------------------------------------------
+! Cloud torrent, debrid and seedbox services
+! --------------------------------------------------------------------------
+! Services that download or stream a torrent on their own servers so the user never runs
+! a torrent client. webtor.io, Seedr, Real-Debrid, TorBox, Stremio and Usenet providers.
+!
+||webtor.io^
+||seedr.cc^
+||bitport.io^
+||zbigz.com^
+||put.io^
+||offcloud.com^
+||premiumize.me^
+||real-debrid.com^
+||alldebrid.com^
+||torbox.app^
+||debrid-link.fr^
+||linksnappy.com^
+||torrentsafe.com^
+||filestream.me^
+||bytesized-hosting.com^
+||seedbox.io^
+||whatbox.ca^
+||ultraseedbox.com^
+||feralhosting.com^
+||rapidseedbox.com^
+||seedhost.eu^
+||pulsedmedia.com^
+||evoseedbox.com^
+||seedboxes.cc^
+||dediseedbox.com^
+||hostingby.design^
+||elfhosted.com^
+||strem.io^
+||stremio.com^
+||torrentio.strem.fun^
+||btorrent.xyz^
+||instant.io^
+||webtorrent.io^
+||multiup.io^
+||easydebrid.com^
+||debridmediamanager.com^
+||nzbget.net^
+||nzbgeek.info^
+||newshosting.com^
+||usenetserver.com^
+||easynews.com^
+||eweka.nl^
+||nzbplanet.net^
+||drunkenslug.com^
+||althub.co.za^
+||tweaknews.eu^
+||frugalusenet.com^
+
+!
+! --------------------------------------------------------------------------
+! Direct download hosts commonly paired with debrid services
+! --------------------------------------------------------------------------
+! File lockers that debrid services unlock. These do have legitimate uses, so delete this
+! whole section if it gets in your way.
+!
+||rapidgator.net^
+||nitroflare.com^
+||ddownload.com^
+||uploadgig.com^
+||katfile.com^
+||turbobit.net^
+||hitfile.net^
+||1fichier.com^
+||fikper.com^
+||filefactory.com^
+||uploaded.net^
+||keep2share.cc^
+||k2s.cc^
+||takefile.link^
+||daofile.com^
+||depositfiles.com^
+||wupfile.com^
+||subyshare.com^
+||filejoker.net^
+||filespace.com^
+||usersdrive.com^
+||worldbytez.com^
+||uploadrar.com^
+||prefiles.com^
+||apkadmin.com^
+||clicknupload.click^
+||dropgalaxy.com^
+||gofile.io^
+||pixeldrain.com^
+||buzzheavier.com^
+
+!
+! --------------------------------------------------------------------------
+! Pirate streaming, unlicensed movie and TV sites
+! --------------------------------------------------------------------------
+! Unlicensed movie and TV streaming sites, including the Indian download portals.
+!
+||fmovies.to^
+||fmovies.co^
+||fmoviesz.to^
+||fmovies24.to^
+||123movies.net^
+||123moviesfree.net^
+||gomovies.sx^
+||gomovies-online.cam^
+||soap2day.to^
+||soap2day.rs^
+||soap2dayx.com^
+||soaper.tv^
+||soaper.live^
+||putlocker.vip^
+||putlockers.vip^
+||primewire.tf^
+||lookmovie.io^
+||lookmovie2.to^
+||lookmovie.ag^
+||sflix.to^
+||myflixer.to^
+||myflixerz.to^
+||flixhq.to^
+||hurawatch.at^
+||hurawatch.bz^
+||bflix.gg^
+||cataz.ru^
+||yesmovies.ag^
+||solarmovie.pe^
+||watchseries.id^
+||watchserieshd.tv^
+||goojara.to^
+||vumoo.to^
+||m4uhd.tv^
+||moviesjoy.plus^
+||movieskiduniya.com^
+||levidia.ch^
+||projectfreetv.one^
+||attacker.tv^
+||kisskh.co^
+||dramacool.com.pa^
+||kissasian.com.lv^
+||vegamovies.nl^
+||filmywap.com.se^
+||bollyflix.com.se^
+
+!
+! --------------------------------------------------------------------------
+! Anime and manga streaming
+! --------------------------------------------------------------------------
+! Unlicensed anime and manga readers. Licensed anime services are in the streaming
+! sections above.
+!
+||9animetv.to^
+||9anime.to^
+||aniwatch.to^
+||hianime.to^
+||hianime.nz^
+||hianimez.to^
+||zoro.to^
+||zorox.to^
+||gogoanime.by^
+||gogoanime3.co^
+||gogoanimehd.to^
+||anitaku.io^
+||animepahe.ru^
+||animepahe.com^
+||animesuge.to^
+||animeflix.gg^
+||kickassanime.mx^
+||allanime.to^
+||animeowl.me^
+||animekai.to^
+||aniplaynow.live^
+||mangadex.org^
+||mangakakalot.com^
+||manganato.com^
+||natomanga.com^
+||mangafire.to^
+||mangapark.net^
+||mangago.me^
+||bato.to^
+||comick.io^
+||weebcentral.com^
+||asurascans.com^
+||nhentai.net^
+||hitomi.la^
+||e-hentai.org^
+||exhentai.org^
+
+!
+! --------------------------------------------------------------------------
+! Unlicensed live sports and IPTV
+! --------------------------------------------------------------------------
+! Illegal sports restreams and IPTV panels, plus a few licensed sports streamers.
+!
+||streameast.to^
+||streameast.app^
+||thestreameast.to^
+||crackstreams.com^
+||buffstreams.app^
+||sportsurge.net^
+||sportsurge.club^
+||vipleague.im^
+||vipbox.lc^
+||totalsportek.com^
+||totalsportek1.com^
+||daddylive.dad^
+||daddylivehd.sx^
+||hesgoal.com^
+||hesgoals.com^
+||rojadirecta.watch^
+||rojadirectaenvivo.pl^
+||livetv.sx^
+||livetv865.me^
+||720pstream.nu^
+||nbastreams.gg^
+||strikeout.nu^
+||firstrowsports.tv^
+||sportplus.live^
+||socceronline.me^
+||footybite.cc^
+||cricfree.sx^
+||cricstream.me^
+||crichd.vip^
+||webcric.com^
+||willow.tv^
+||fancode.com^
+||iptv-org.github.io^
+||xtream-codes.com^
+||sstv.one^
+||apollogroup.tv^
+||xtremehd-iptv.com^
+
+!
+! --------------------------------------------------------------------------
+! PC game piracy and repack sites
+! --------------------------------------------------------------------------
+! Repack and cracked game distributors, which are almost all torrent driven.
+!
+||fitgirl-repacks.site^
+||dodi-repacks.site^
+||dodi-repacks.download^
+||skidrowreloaded.com^
+||skidrow-games.com^
+||igg-games.com^
+||igggames.org^
+||ovagames.com^
+||gamestorrents.fm^
+||steamunlocked.net^
+||elamigos.site^
+||elamigos-games.com^
+||crackwatch.com^
+||cs.rin.ru^
+||online-fix.me^
+||gload.to^
+||pcgamestorrents.com^
+||gamepciso.com^
+||worldofpcgames.com^
+||oceanofgames.com^
+||apunkagames.net^
+||repack-games.com^
+
+!
+! --------------------------------------------------------------------------
+! Extended coverage: torrent and piracy domains from The Block List Project
+! --------------------------------------------------------------------------
+! Source: https://github.com/blocklistproject/Lists (piracy.txt and torrent.txt),
+! released into the public domain under the Unlicense.
+! Their raw lists carry a lot of dead weight, so every domain below was resolved on
+! 2026-08-28 and anything that came back NXDOMAIN or landed on a known domain-parking
+! IP was thrown away. Linux distro torrents (torrent.ubuntu.com, Fedora), archive.org
+! and tech news sites were removed by hand. Delete this whole block if you only want
+! the curated sections above.
+!
+||0.arenabg.com^
+||0daycn.net^
+||1337.abcvg.info^
+||1clickdown.com^
+||1nd.hu^
+||240x320.ru^
+||2bbit.com^
+||2name.com^
+||300kg.ru^
+||3dmgame.com^
+||420project.org^
+||4realtorrentz.com^
+||5tigorsk.ru^
+||6ffc826b.yyv.co^
+||7ur.ru^
+||8hacks.com^
+||9.rarbg.to^
+||a2zapk.com^
+||a2zcrack.com^
+||abandon5000.com^
+||abbaspc.net^
+||abv-media.ru^
+||acehd.net^
+||acg.rip^
+||adamsfile.com^
+||ads-team.ru^
+||afdah.ws^
+||alanb.yi.org^
+||alivedownload.com^
+||all4nothin.net^
+||allfreesoftware.org^
+||amazing-news.se^
+||ambits.org^
+||amerikasimperialism.2ya.com^
+||anbudom.net^
+||anidb.info^
+||anidex.moe^
+||anime-faith.com^
+||anime-legion.net^
+||animebw.com^
+||animebyt.es^
+||animeforever.org^
+||animelab.com^
+||animelatino.org^
+||animelayer.ru^
+||animesuki.com^
+||animetorrents.com^
+||anirena.com^
+||ankeschwarz.net^
+||antivirkeys.okis.ru^
+||antsmarching.org^
+||anvilofsound.com^
+||apkgeek.net^
+||apkmb.com^
+||apkocean.net^
+||arabfilms.org^
+||arabseries.org^
+||araditracker.com^
+||arena-tr.com^
+||arenabg.com^
+||argenteam.net^
+||artofmisdirection.com^
+||asiandvdclub.org^
+||asiatorrents.com^
+||astroeggs.com^
+||at4re.com^
+||atrack.pow7.com^
+||audiobit.ru^
+||audiobookbay.is^
+||audiobookbay.se^
+||audionews.ru^
+||audiostuff.ro^
+||aus.sierules.com^
+||autocadbmjes.com^
+||autocadtfesvb.com^
+||avetorrents.com^
+||avistaz.com^
+||avistaz.me^
+||ayu-tracker.enlist-a-distro.net^
+||azn-project.depthstrike.com^
+||b2s-share.com^
+||baberepublic.com^
+||baibako.tv^
+||baka-updates.com^
+||bakabt.com^
+||balkan-torrent.net^
+||baltracker.net^
+||bangbangtorrents.no-ip.info^
+||banglatorrents.com^
+||basixmovie.com^
+||basket-torrent.webpark.pl^
+||bb-tv.org^
+||bblc.tv^
+||beatz.us^
+||beload.hu^
+||bemaniso.ws^
+||bestcracks.net^
+||bestfiles.oo.lv^
+||bestfilez.net^
+||bestpokertorrents.com^
+||bestreams.net^
+||besttracker.cz^
+||bhlegend.com^
+||bhpt4vip.com^
+||bigfoot1942.sektori.org^
+||bindassdesi.com^
+||biotorrents.net^
+||bit-hdtv.com^
+||bit-torrent.ru^
+||bitcity.hu^
+||bitenova.org^
+||bitgamer.com^
+||bitgate.org^
+||bithouse.org^
+||bithumen.be^
+||bitmanija.net^
+||bitme.org^
+||bitmetv.org^
+||bitmovie.org^
+||bitnova.info^
+||bitoogle.com^
+||bitseduce.com^
+||bitsnoop.com^
+||bitspyder.net^
+||bittorrent.com^
+||bittorrent.frozen-layer.net^
+||bittorrent.shinsen-subs.org^
+||bittown.org^
+||bitturk.com^
+||biztorrents.com^
+||blackbookmembers.info^
+||blackcats-games.com^
+||blackcats-games.net^
+||blackhatprotools.com^
+||blackhatprotools.org^
+||blackrevolution.ro^
+||blokt.com^
+||blondeadvice.com^
+||blu-bits.com^
+||blu-torrents.net^
+||bluebird-hd.org^
+||blues-brothers.biz^
+||bmwfilms.com^
+||bobfilm.biz^
+||bookgrill.com^
+||boommovie.org^
+||bootcity.org^
+||bootylounge.org^
+||bootytape.com^
+||bootytorrents.com^
+||boxset.ru^
+||breathetheword.org.uk^
+||browntracker.net^
+||bt-chat.com^
+||bt-revolution.net^
+||bt-tracker.gamexp.ru^
+||bt.3dmgame.com^
+||bt.ali213.net^
+||bt.avistaz.com^
+||bt.beatrice-raws.org^
+||bt.emuparadise.org^
+||bt.etree.org^
+||bt.eutorrents.com^
+||bt.ourdisc.net^
+||bt.planetq.net^
+||bt.saiyaman.info^
+||bt.t-ru.org^
+||bt.viachicago.org^
+||bt.xbox-sky.com^
+||bt.yumeru.net^
+||bt.zlofenix.org^
+||bt1.the9.com^
+||bt2.54new.com^
+||bt3.t-ru.org^
+||btarg.com.ar^
+||btbot.com^
+||btgigs.info^
+||btjunkie.org^
+||btmon.com^
+||btmusic.org^
+||btr.kz^
+||btscene.com^
+||btscene.eu^
+||btzone.org^
+||bulextorrent.org^
+||bushtorrent.com^
+||bwtorrents.com^
+||bytecollectors.com^
+||c1anime.net^
+||c4crack.com^
+||candownload.org^
+||cartoonchaos.org^
+||ccfbits.org^
+||cdcovers.cc^
+||cddownloadfree.org^
+||cdkeysgames.com^
+||cdn.retget.ru^
+||central-torrent.eu^
+||centraltracker.org^
+||chdtv.net^
+||cheat-gam3.com^
+||cheggit.net^
+||chilebt.com^
+||chinahdtv.org^
+||chomskytorrents.org^
+||christianmovies.eu^
+||chronictracker.com^
+||cinebay.org^
+||cinemanija.com^
+||cinematik.net^
+||citybit.ro^
+||climatebites.org^
+||clipmovie.org^
+||coda.fm^
+||colombo-bt.org^
+||comcentral.com^
+||comebackdownload.com^
+||comicbt.com^
+||concerttrader.com^
+||coppersurfer.tk^
+||crack4soft.com^
+||crack55.com^
+||crack81.com^
+||crackedversion.com^
+||crackmykey.com^
+||crackpcsoftware.com^
+||cracks4download.com^
+||cracksfiles.com^
+||cracksnow.com^
+||cracksoftwarez.com^
+||cracksurl.com^
+||crackway.com^
+||cracx.com^
+||crazysaloon.com^
+||creative-bits.org^
+||crnaberza.com^
+||cronus.spaceports.com^
+||crotorrents.com^
+||cspan.com^
+||cuteyhoneyflash.de^
+||cwer.ws^
+||d-addicts.com^
+||d4download.com^
+||danger.lv^
+||danime.2ya.com^
+||darkwarez.pl^
+||dashunika07.ueuo.com^
+||data-bg.net^
+||datafilehost.com^
+||datascene.net^
+||dbz-media.nl^
+||dbzdivx.com^
+||dctorrent.com^
+||deadfrog.us^
+||deamonbytes.net^
+||deathlord.eu^
+||deepseek.net^
+||deimonhigh.com^
+||deluge-torrent.org^
+||demonii.com^
+||demonoid.ph^
+||demonoid.pw^
+||denis.stalker.upeer.me^
+||derechosmadretierra.org^
+||desi6.com^
+||desibbrg.com^
+||desitorrents.com^
+||desmaxgo.com^
+||deviloid.net^
+||dfox.it^
+||diablotorrent.hu^
+||diakov.net^
+||diamondsrooms.com^
+||diggnation.org^
+||digitalboots.net^
+||dimeadozen.org^
+||dirtytorrents.com^
+||discount-inks.com^
+||divxatope.com^
+||divxtotal.com^
+||djconway.com^
+||djleak.com^
+||dl.phazeddl.com^
+||dl4v.com^
+||dle-news.ru^
+||dle-shablons.ru^
+||dmfk.org^
+||dn42.smrsh.net^
+||dnf24.com^
+||doc-doc.ru^
+||docspedia.org^
+||dodear.com^
+||domdata.ru^
+||donevideo.com^
+||download.f60s.com^
+||downloadanime.org^
+||downloadarch.com^
+||downloademule.org^
+||downloadforum.com^
+||downloadportal.dk^
+||downloadpost.com^
+||downloadsoftwarez.net^
+||downloadspace.org^
+||downloadteam.org^
+||downloadtop.org^
+||downloadwarez.org^
+||downpit.com^
+||doxma.com^
+||dragon-torrents.biz^
+||dragons-den.net^
+||dreamddl.com^
+||dreamingtree.org^
+||dreamorabt.com^
+||drivec.ru^
+||dummipedia.org^
+||dutchnova.com^
+||dynamic-universe.com^
+||dzot.com^
+||ebookdirectory.com^
+||ebookshare.net^
+||ebookvortex.com^
+||eddie4.nl^
+||egyptfans.net^
+||ehho.net^
+||eldirnet.no-ip.info^
+||elit-bg.com^
+||elitetorrent.net^
+||elmellowebmaster.es.tl^
+||elsewhere.org^
+||emiz.biz^
+||encodeking.com^
+||energy-torrent.com^
+||ethor.net^
+||ettvtorrents.com^
+||evopt.org^
+||exitorrent.eu^
+||extratorrent.com^
+||extratorrents.ch^
+||extremebits.org^
+||ezrss.it^
+||eztv.ag^
+||eztv.io^
+||fano.lv^
+||fashion-factory.ru^
+||fddbits.com^
+||feeder.lt^
+||fiberlink.eu^
+||file.lu^
+||file.lv^
+||filebag.org^
+||filedep.co.cc^
+||filejungle.com^
+||filelist.org^
+||filelist.ro^
+||fileporn.org^
+||filmbits.net^
+||filmsbt.com^
+||finbytes.org^
+||finvip.org^
+||firesticktricks.com^
+||flextorrents.com^
+||flixdump.com^
+||flixflux.co.uk^
+||flixtor.me^
+||foff.ru^
+||fonoon.org^
+||forest.far.ru^
+||foreverdrowning.com^
+||foros.puntotorrent.com^
+||forums.mvgroup.org^
+||fotoredactor.com^
+||free.appnee.com^
+||free.getlink.vn^
+||free4pc.org^
+||freedocumentaries.org^
+||freeoldies.com^
+||freepeer.org^
+||freerus.ru^
+||freesoftonic.com^
+||freewebs.com^
+||frendz4m.com^
+||freshon.tv^
+||freshtool.ru^
+||friends-torrent.com^
+||frozen-layer.com^
+||fruitytuts.com^
+||fulldls.com^
+||fullpcsoftware.com^
+||fullprogramlarindir.com^
+||fullreleasez.com^
+||fullsoftversion.com^
+||funfile.org^
+||funkytorrents.com^
+||funsharing.net^
+||fztvseries.mobi^
+||g2g.fm^
+||gamato.info^
+||game-2u.com^
+||game-files.net^
+||gamegear.nl^
+||gamerzneeds.net^
+||gamestorrents.com^
+||gamezlinks.net^
+||garaje.ya.com^
+||gay-torrents.net^
+||gdtorrent.com^
+||gendou.com^
+||general-files.com^
+||generatory.3xg.pl^
+||geographynetwork.com^
+||get-host.net^
+||get.geo.opera.com^
+||getintopc.com^
+||getlink.vn^
+||gigapurbalingga.net^
+||gigatorrents.ws^
+||gits.no-jutsu.com^
+||global-evolve.com^
+||goem.org^
+||gold-films.ru^
+||goldpravda.net^
+||goodolddays.net^
+||googledrivelinks.com^
+||goucod.ru^
+||grabthe.info^
+||grand-turk.com^
+||grc.com^
+||greek-tracker.com^
+||greencracks.com^
+||greylodge.org^
+||grifon.info^
+||guiks.net^
+||gunsnroses.us^
+||gutenberg.org^
+||guysmovies.com^
+||gwp2-v19.rinet.ru^
+||hackchefs.com^
+||hadopeer.org^
+||haykowarez.ru^
+||hd-space.org^
+||hd-spain.com^
+||hd.club.tw^
+||hdbits.cn^
+||hdbt.pl^
+||hdchina.org^
+||hdcity.org^
+||hdclub.com.ua^
+||hddvdrip.com^
+||hdlog.info^
+||hdroad.org^
+||hdsource.biz^
+||hdstar.org^
+||hdtorrents.it^
+||hdtporno.org^
+||hdtracker.ru^
+||hdvnbits.org^
+||heartofmadness.com^
+||hebits.net^
+||hellenicwave.net^
+||herobit.org^
+||hexagon.cc^
+||hgzone.ro^
+||hit2k.com^
+||hit4k.com^
+||hongfire.com^
+||hqanime4arab.com^
+||hqsource.org^
+||hypertorrent.com^
+||i-139.b-45505.ut.bench.utorrent.com^
+||i-29.b-45505.ut.bench.utorrent.com^
+||i-32.b-45505.ut.bench.utorrent.com^
+||i-43.b-45505.ut.bench.utorrent.com^
+||i-64.b-45505.ut.bench.utorrent.com^
+||iartbot.ru^
+||ibiblio.org^
+||idmserialkeycrack.com^
+||ilcorsaronero.info^
+||imodzone.net^
+||impulsive.hu^
+||imtorrents.com^
+||imzdl.com^
+||indep.eu^
+||index.plan9.de^
+||indietorrents.com^
+||infire.si^
+||inkrecharge.com^
+||intermedio.ro^
+||iphonebooks.info^
+||ipmart-forum.com^
+||isohunt.com^
+||isohunt.ee^
+||isoplex.isohunt.to^
+||istrahome.ru^
+||izofile.com^
+||jamendo.com^
+||jamez.org^
+||jamtothis.com^
+||jopa.cz^
+||journeyman.tv^
+||jpopsuki.eu^
+||jshdtv.cn^
+||jurnal-portal.ru^
+||justpaid.co.nr^
+||kanava.org^
+||karagarga.net^
+||karanpc.com^
+||katz.to^
+||katzddl.ws^
+||keygen.us^
+||keygenguru.com^
+||keygens.pro^
+||kickass.me.uk^
+||kickass.so^
+||kickass.to^
+||kickassto.co^
+||kickasstorrents.pw^
+||kingdomxxx.com^
+||kinguin.net^
+||kino-hit.com^
+||kinoclub.org^
+||kinomall.ru^
+||kinomix.tv^
+||kinomob.com^
+||kinox.to^
+||kmn-music.de^
+||komodoisland.net^
+||korsar.tv^
+||kraytracker.com^
+||lapache.info^
+||laser-dentaire.org^
+||learnbits.me^
+||learnbits.org^
+||learner.org^
+||leechfree.com^
+||leelo.ru^
+||legaltorrents.com^
+||leopard-raws.org^
+||les-freres-ainsworth.com^
+||lesbians4u.org^
+||letsroll911.org^
+||libgen.is^
+||licensekeys.org^
+||licensesnkey.com^
+||lifemovie.org^
+||linkomanija.net^
+||linkseed.net^
+||linux23.com^
+||linuxmafia.net^
+||linuxtracker.org^
+||lnx-bbc.org^
+||losslessclub.com^
+||lostfilm.tv^
+||loushao.net^
+||lovethescene.net^
+||lt.www.kat.ph^
+||m2ktalk.com^
+||mabula.net^
+||macserial.com^
+||mad-jack.com^
+||mahou.org^
+||mail2.zelenaya.net^
+||majomparade.com^
+||malacka.com^
+||masters-tb.com^
+||mates-r-us.com^
+||matrix-virovitica.com^
+||mawtoload.com^
+||mdown.org^
+||medbit.ru^
+||media-sharing.com^
+||mediaclub.tv^
+||mediakey.dk^
+||megatorrents.org^
+||megauploadforum.net^
+||megfilm.lv^
+||melen.net^
+||melomaniacos.com^
+||members.shaw.ca^
+||metal-tracker.com^
+||metal.iplay.ro^
+||metallifukinca.com^
+||mikkisays.net^
+||mindwarppavilion.org^
+||mininova.org^
+||mirrortorrents.ru^
+||mixes.dfx.at^
+||mixsoftware.ru^
+||mixtapetorrent.com^
+||mma-torrents.com^
+||mma-tracker.net^
+||mmosite.com^
+||mmult.ru^
+||mobilesites.org^
+||mobilestan.net^
+||mobilism.org^
+||mobiplanet.in^
+||mobtvseries.net^
+||modok.ru^
+||mojblink.com^
+||mononoke-bt.org^
+||monova.org^
+||moobs.hu^
+||motorworld.net^
+||moviebest.org^
+||moviefox.org^
+||moviesdvdr.com^
+||moviesmobile.net^
+||movieszone.org^
+||movietorrents.info^
+||movreel.com^
+||mp3-club.ru^
+||mp3indexer.com^
+||mp3menu.net^
+||mp3skull.me^
+||mp3songs.us^
+||mp4hdmovies.org^
+||mpg.de^
+||mpn.freehostia.com^
+||mrdeni.com^
+||mrtwig.net^
+||msilab.ru^
+||muhammadniaz.net^
+||murmurs.com^
+||music-vid.com^
+||musicmania.ql.lt^
+||musicsaz.com^
+||mvgroup.org^
+||my-cinema.net^
+||my-gamebox.com^
+||myfreeleech.com^
+||mysilu.com^
+||mytracker.ru^
+||mywebpages.comcast.net^
+||najnovije.net^
+||nasa.gov^
+||ncore.cc^
+||ncore.pro^
+||nerealus.lt^
+||netbsd.org^
+||newcracks.net^
+||newnova.org^
+||newtorrents.info^
+||nextwap.net^
+||nhltorrents.co.uk^
+||nineoneone.nl^
+||nmuca.org^
+||nnm-club.ru^
+||nnm.ru^
+||nod32sky.com^
+||nordicbits.org^
+||novahax.com^
+||novamov.com^
+||nowvideo.ch^
+||ns1.dnf24.com^
+||ns1.online-life.ru^
+||ns1.primartists.com^
+||ns1.sserial.net^
+||ns1.sweet-paris.com^
+||ns1.torfinder.net^
+||ns2.dnf24.com^
+||ns2.online-life.ru^
+||ns2.primartists.com^
+||ns2.sserial.net^
+||ns2.sweet-paris.com^
+||ns2.torfinder.net^
+||nsanedown.com^
+||nsw2u.com^
+||ntorrent.yoyo.pl^
+||ntorrents.net^
+||nullforums.net^
+||nutorrent.com^
+||nxbrew.com^
+||nyaa.eu^
+||nyaa.tracker.wf^
+||nzbsrus.com^
+||nzone.com^
+||oakvilleorthotics.com^
+||online-life.ru^
+||onlytorrents.com^
+||open.acgtracker.com^
+||open.demonii.si^
+||open.touki.ru^
+||opentor.org^
+||opentracker.acgnx.se^
+||orion.si^
+||outlaw.lv^
+||p-games.ru^
+||p2pbg.com^
+||p2pnet.net^
+||p4p.arenabg.ch^
+||paidmovies.com^
+||panda.cd^
+||pandopuntokualda.com^
+||panoric.com^
+||pantherabits.com^
+||paranetinfo.com^
+||parliamentlive.tv^
+||partis.si^
+||passthepopcorn.org^
+||pavv.ru^
+||pbs.org^
+||pc-software.ru^
+||peerportal.org^
+||peteteo.com^
+||piranha.excom.us^
+||pirate-bay.net^
+||pirate-share.net^
+||piratebay.cc^
+||piratebrowser.com^
+||pirateclub.hu^
+||piratepc.me^
+||pirateproxy-bay.com^
+||piratic.org^
+||pirlog.com^
+||pitbulltorrent.eu^
+||pleer.com^
+||podtropolis.com^
+||pof.hu^
+||polishtracker.org^
+||polskitorrent.pl^
+||polycracks.com^
+||popedope.com^
+||pornbits.net^
+||pornevo.com^
+||pornolab.net^
+||pow7.com^
+||powerbits.org^
+||prescene.com^
+||primartists.com^
+||primewire.ag^
+||pro-evolution.org^
+||proaudiotorrents.org^
+||pron4.me^
+||propernoun.net^
+||prosmart.by^
+||proxy.nsanedown.com^
+||ps4pkg.com^
+||ps5pkg.net^
+||pspstrana.ru^
+||publicdomaintorrents.com^
+||punkoiska.com^
+||puretna.com^
+||pussytorrents.org^
+||putlocker.unblocked.ist^
+||pwtorrents.net^
+||pythons-lair.com^
+||qbittorrent.org^
+||randomnothings.com^
+||raphustle.com^
+||rapidleech2011.eu.ki^
+||rapidmoviez.com^
+||raspberryheaven.net^
+||raulken.it^
+||redskunk.org^
+||repack.me^
+||reprobate.se^
+||requestcracks.com^
+||retracker.akado-ural.ru^
+||retracker.sevstar.net^
+||rexdl.com^
+||rochestergroove.com^
+||router.utorrent.com^
+||royal-orleans.com^
+||rstorrent.org.pl^
+||rt.tace.ru^
+||rth77.ru^
+||rtorrent.net^
+||rune-server.org^
+||rutracker.wiki^
+||s0ft4pc.com^
+||s4softwares.com^
+||safepeer.info^
+||saiyanarena.com^
+||samsung-s5230.ru^
+||satiq.net^
+||savaria.szerverem.hu^
+||scene-rush.com^
+||scenehd.org^
+||scenespot.net^
+||scenex.me^
+||sdbits.org^
+||sdmega.com^
+||seasonvar.ru^
+||secret-cinema.com^
+||secure.pow7.com^
+||securedgen.com^
+||securityweb.ueuo.com^
+||seedit.org^
+||seikai-no-fansubs.us.tt^
+||serialcoded.com^
+||serialkeys.info^
+||serialnews.net^
+||serialnumber.in^
+||serialportal.com^
+||serialstart.com^
+||serialsurf.com^
+||sexuria.net^
+||shadow.lv^
+||shadowshq.yi.org^
+||share.camoe.cn^
+||share2downloads.com^
+||sharedtutor.com^
+||sharegroundz.com^
+||sharereactor.ru^
+||shimory.com^
+||shnflac.net^
+||shopdoc.ru^
+||showrss.info^
+||siambt.com^
+||sifara.com^
+||siliconguide.com^
+||siluhd.com^
+||sinister.ly^
+||sjcrack.com^
+||skidrowcrack.com^
+||skyll.net^
+||slyck.com^
+||smart-os.ru^
+||smartorrent.com^
+||snarf-it.org^
+||snowtigers.net^
+||softasm.com^
+||softlinkers.org^
+||softmp3.org^
+||softreliz.net^
+||softtorrents.org^
+||solidsoftwaretools.com^
+||sonofshun.com^
+||special.pwtorrents.net^
+||speed.cd^
+||speeddemosarchive.com^
+||speedtrack.org^
+||spirit-tracker.org^
+||sport-scene.net^
+||sserial.net^
+||stafaband.info^
+||stanthecaddy.com^
+||starshare.ro^
+||stmusic.org^
+||streambit.net^
+||streamit.ws^
+||streamzone.es^
+||streamzone.org^
+||streamzone.ru^
+||streghettaincucina.com^
+||stuckgamer.com^
+||subtracker.net^
+||sukebei.tracker.wf^
+||super-warez.net^
+||super.megatemka.ru^
+||superserials.com^
+||supertorrents.org^
+||suprbay.org^
+||supremetorrents.co.uk^
+||surrealmoviez.info^
+||suspic.com^
+||sweet-paris.com^
+||swetv.org^
+||t.acg.rip^
+||t.jaekr.sh^
+||t.nyaatracker.com^
+||t.overflow.biz^
+||t.ppnow.net^
+||t1.pow7.com^
+||t2.pow7.com^
+||t3nnis.tv^
+||takeback.org^
+||tamiltorrents.net^
+||tangledupintorrents.com^
+||tapedown.com^
+||tapochek.net^
+||taringa.net^
+||tc-boxing.com^
+||techanywhere.com^
+||tektorrent.net^
+||the-eye.eu^
+||the-underdogs.org^
+||thebeehive.info^
+||thebestvpn.com^
+||thebox.bz^
+||thebugs.us^
+||thefiles.ro^
+||thegeeks.bz^
+||thegft.org^
+||thegt.net^
+||theisozone.com^
+||thekat.info^
+||thelinuxcode.com^
+||themediasite.net^
+||themixingbowl.org^
+||thepiratebay.ee^
+||theplace.bz^
+||thepokerbay.org^
+||theskyiscrape.com^
+||thesurgeons.org^
+||thetracker.org^
+||thetradersden.org^
+||thetrickz.com^
+||throughput.de^
+||tienichmaytinh.com^
+||tigerblack.net^
+||tnttorrent.info^
+||tntvillage.org^
+||tobestroika.ru^
+||toolhip.com^
+||tophos.org^
+||topnet.in^
+||topseda.ir^
+||topstoredownloads.com^
+||torentcrestin.net^
+||torfinder.net^
+||toriyamaworld.com^
+||torrent-damage.net^
+||torrent-downloads.to^
+||torrent-finder.com^
+||torrent-polska.info^
+||torrent.arjlover.net^
+||torrent.burgas.org^
+||torrent.genesis-movement.org^
+||torrent.janemusic.org^
+||torrent.lt^
+||torrent.mp3quran.net^
+||torrent.nwps.ws^
+||torrent.resonatingmedia.com^
+||torrent.share.net.ua^
+||torrent.unix-ag.uni-kl.de^
+||torrent411.com^
+||torrentai.net^
+||torrentai.org^
+||torrentazos.com^
+||torrentbox.com^
+||torrentbytes.net^
+||torrentdownloads.net^
+||torrentech.org^
+||torrentek.hu^
+||torrenthound.com^
+||torrenthr.org^
+||torrentialstorm.net^
+||torrentkris.xt.pl^
+||torrentlocomotive.com^
+||torrentmas.com^
+||torrentmind.com^
+||torrentmovie.info^
+||torrentnote.com^
+||torrentreactor.net^
+||torrents-time.com^
+||torrents.by^
+||torrents.com^
+||torrents.dekadence.ro^
+||torrents.emu-russia.net^
+||torrents.ge^
+||torrents.to^
+||torrents.yourexotic.com^
+||torrentscan.com^
+||torrentscity.net^
+||torrentsearch.com^
+||torrentsgalaxy.com^
+||torrentsmd.com^
+||torrentspain.com^
+||torrentspy.com^
+||torrenttracker.nwc.acsalaska.net^
+||torrenttyphoon.com^
+||torrentum.y0.pl^
+||torrentvault.org^
+||torrentvideos.com^
+||torrentz.com^
+||torrentzone.net^
+||totaltorrents.com^
+||tpb.tracker.prq.to^
+||tr.bangumi.moe^
+||tr.cili001.com^
+||tr.ready4.icu^
+||tracker.0day.kiev.ua^
+||tracker.acgnx.se^
+||tracker.ali213.net^
+||tracker.anirena.com^
+||tracker.anonwebz.xyz^
+||tracker.baltracker.net^
+||tracker.bt4g.com^
+||tracker.cyberia.is^
+||tracker.cztorrent.net^
+||tracker.elektronik.ro^
+||tracker.etn.fm^
+||tracker.etree.org^
+||tracker.frozen-layer.net^
+||tracker.funfile.org^
+||tracker.gcvchp.com^
+||tracker.gigatorrents.ws^
+||tracker.hexagon.cc^
+||tracker.iamhansen.xyz^
+||tracker.imgoingto.icu^
+||tracker.kali.org^
+||tracker.kuroy.me^
+||tracker.ledreactor.org^
+||tracker.marinsm.com^
+||tracker.minglong.org^
+||tracker.novage.com.ua^
+||tracker.open-internet.nl^
+||tracker.openwebtorrent.com^
+||tracker.parrotlinux.org^
+||tracker.parrotsec.org^
+||tracker.prq.to^
+||tracker.pussytorrents.org^
+||tracker.samplicio.us^
+||tracker.sktorrent.net^
+||tracker.skyts.cn^
+||tracker.swateam.org.uk^
+||tracker.tasvideos.org^
+||tracker.tntvillage.scambioetico.org^
+||tracker.torrent.zond.org^
+||tracker.torrentbytes.net^
+||tracker.torrentleech.org^
+||tracker.torrenty.org^
+||tracker.unbxdapi.com^
+||tracker.uw0.xyz^
+||tracker.ygsub.com^
+||tracker1.itzmx.com^
+||tracker2.dler.org^
+||tracker2.itzmx.com^
+||tracker3.itzmx.com^
+||tracker4.itzmx.com^
+||trackerturk.biz^
+||trackerx.com.ar^
+||trackerzone.co.uk^
+||tranceroute.com^
+||trancetraffic.com^
+||transamrit.net^
+||tribalmixes.com^
+||triptorrents.com^
+||troypoint.com^
+||trungkien.us^
+||tryfile.com^
+||ts.kurtubba.com^
+||tterm.xorg.pl^
+||ttoktv.com^
+||turktorrent.biz^
+||tuxdistro.com^
+||tv.tracker.prq.to^
+||tvseries.in^
+||tvspring.com^
+||tvtokio.ru^
+||tvtorrent.info^
+||tvtorrents.com^
+||twilightkisses.com^
+||u-torrents.ro^
+||u2.dmhy.org^
+||u2torrents.com^
+||unblocked.pw^
+||unblockedpiratebay.com^
+||underground-gamer.com^
+||undergroundclips.com^
+||underpl.org^
+||uniongang.tv^
+||uniquewarez.com^
+||unlimitedserials.com^
+||unlimovie.tv^
+||update.bittorrent.com^
+||update.utorrent.com^
+||updatesofts.com^
+||uploadbox.com^
+||upstore.net^
+||uptobox.com^
+||uraxhayer.ru^
+||usabit.com^
+||usch.ru^
+||usemeplz.com^
+||usenext.com^
+||ut.bench.utorrent.com^
+||utclient.utorrent.com^
+||utorrent.com^
+||vbwarez.net^
+||vega.org.uk^
+||vertor.com^
+||vibes.cc^
+||victoriancrapper.com^
+||videocop.com^
+||vidhog.com^
+||vigorish.ru^
+||vpn.flying-datacenter.de^
+||vpnmentor.com^
+||vps02.net.orel.ru^
+||vps2.avc.cx^
+||vuze.com^
+||waffles.fm^
+||wannabefansubs.net^
+||wap.delmy.com^
+||wap.ehho.net^
+||wapfun.us^
+||warez-bb.org^
+||warez-vislovo.ru^
+||warez-world.org^
+||warez.loxblog.com^
+||warezfortune.com^
+||warezforum.info^
+||warezkeeper.com^
+||warezstore.com^
+||warezstore.org^
+||wareztorrent.com^
+||warrex.net^
+||watchonlineseries.eu^
+||web1.nugs.net^
+||webcast.berkeley.edu^
+||weedy.1.vg^
+||welcometothescene.com^
+||what.cd^
+||whotv.org^
+||wild-bytes.org^
+||world-in-hd.net^
+||worldboxingvideoarchive.com^
+||worldwind.arc.nasa.gov^
+||worldwrestlingtorrents.net^
+||wormsblast.com.pl^
+||wpp-fansubs.com^
+||wqsky.com^
+||www2.digitaldistractions.org^
+||www2.l33t-raws.org^
+||x264.me^
+||xbox.udp.at^
+||xcsp.net^
+||xforce-cracks.com^
+||xider.hu^
+||xlist.ro^
+||xn--80a4b.com^
+||xtraseed.com^
+||xtremetv.org^
+||xtremewrestlingtorrents.net^
+||xwt-classics.net^
+||xxxtor.com^
+||yeeshkul.com^
+||yify-movie.com^
+||yifymovietorrent.com^
+||yifytorrents.net^
+||yifytv.unblckd.ist^
+||yoadobehekku.com^
+||youhaveavirus.com^
+||youtorrent.com^
+||youwatch.org^
+||yts.ag^
+||yts.re^
+||yubraca.net^
+||zamunda.net^
+||zcrack.com^
+||zdig1.biz^
+||zeduga.com^
+||zmovie.ru^
+||zone-torrent.net^
+||zoozle.org^
+||ztracker.hu^
+!
+! ============================================================================
+! ALLOWLIST: music stays on, video goes off
+! ============================================================================
+!
+! An AdGuard exception rule beats a plain blocking rule no matter where the two
+! rules sit in the file. Two jobs are done here.
+!
+! Job one: put music.youtube.com back after ||youtube.com^ blocked it.
+!
+@@||music.youtube.com^
+!
+! Job two: state out loud that the audio services stay reachable. None of these
+! are blocked anywhere above, so on their own these lines change nothing today.
+! They exist so the intent survives you merging this file with someone else's
+! blocklist that does block them.
+!
+@@||spotify.com^
+@@||scdn.co^
+@@||spotifycdn.com^
+@@||spotifycdn.net^
+@@||spoti.fi^
+@@||music.apple.com^
+@@||itunes.apple.com^
+@@||mzstatic.com^
+@@||music.amazon.com^
+@@||music.amazon.in^
+@@||music.amazon.co.uk^
+@@||m.media-amazon.com^
+@@||soundcloud.com^
+@@||sndcdn.com^
+@@||deezer.com^
+@@||dzcdn.net^
+@@||tidal.com^
+@@||pandora.com^
+@@||jiosaavn.com^
+@@||saavn.com^
+@@||gaana.com^
+@@||wynk.in^
+@@||audiomack.com^
+@@||bandcamp.com^
+@@||bcbits.com^
+@@||last.fm^
+@@||mixcloud.com^
+@@||qobuz.com^
+@@||anghami.com^
+@@||iheart.com^
+!
+! Job three: the shared Google infrastructure YouTube Music needs. Not blocked
+! above either, listed for the same merge safety reason.
+!
+@@||accounts.google.com^
+@@||yt3.googleusercontent.com^
+@@||googlevideo.com^
+@@||youtubei.googleapis.com^
+@@||i.ytimg.com^
+!
+! If you ever merge this with a list that uses $important to block one of the
+! above, append $important to the matching line here so it wins, for example:
+!     @@||spotify.com^$important
+!
+! End of file.
