@@ -13,24 +13,29 @@ Written in AdGuard DNS filtering syntax, the same syntax the
 
 Two builds, same coverage. Pick one.
 
-**Compact, 485 rules.** Use this if your resolver caps you. The AdGuard DNS Personal plan
+> **Renamed in v1.3.1.** These files used to be `filter-compact.txt` and `filter.txt`. They were
+> renamed to bust a stale cache: AdGuard and the GitHub raw CDN both cache by URL, and a new path
+> is the reliable way to force a refetch. The old URLs are gone. This is a one time thing, future
+> content updates land at these same URLs and refresh on their own.
+
+**Compact, 493 rules.** Use this if your resolver caps you. The AdGuard DNS Personal plan
 allows 1000 filtering rules, and that cap applies to **custom blocklists added by URL**, which
 is exactly how you would subscribe to this one. AdGuard's own catalog lists do not count against
 it, so enabling the AdGuard DNS filter alongside this costs you nothing. Go over the cap and the
 offending custom list is disabled automatically. Team is 5K, Enterprise is 100K.
 
 ```
-https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/filter-compact.txt
+https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist.txt
 ```
 
-**Full, 790 rules.** Every rule is a plain domain, nothing to reason about. Use this if you
+**Full, 798 rules.** Every rule is a plain domain, nothing to reason about. Use this if you
 self host AdGuard Home or Pi-hole, where there is no cap.
 
 ```
-https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/filter.txt
+https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist-full.txt
 ```
 
-The compact build swaps 494 literal domain rules for 123 regular expressions. It is not just
+The compact build swaps 494 literal domain rules for 126 regular expressions. It is not just
 smaller: a brand anchored pattern like the one covering 1337x follows that site to whatever TLD
 it jumps to next month, which a literal list cannot do.
 
@@ -44,7 +49,7 @@ invalid rules, zero duplicates) and tested against AdGuard's own matching engine
 |---|---|
 | AdGuard Home | Filters > DNS blocklists > Add blocklist. Both rule types work as is. |
 | AdGuard DNS | Custom blocklist URL, or paste into custom filtering rules. |
-| Pi-hole | Use `filter.txt`, not the compact build: Pi-hole does not evaluate regex rules from an adlist. Adlists also do **not** reliably understand `@@` exceptions, so add `music.youtube.com` to Domains > Allow by hand. |
+| Pi-hole | Use `blocklist-full.txt`, not the compact build: Pi-hole does not evaluate regex rules from an adlist. Adlists also do **not** reliably understand `@@` exceptions, so add `music.youtube.com` to Domains > Allow by hand. |
 | NextDNS | Denylist import, then allow `music.youtube.com` by hand. |
 
 ## What it blocks
@@ -68,7 +73,7 @@ manga readers, game repack sites.
 
 Every music service. Spotify, Apple Music, Amazon Music, YouTube Music, SoundCloud, Deezer, Tidal,
 Pandora, JioSaavn, Gaana, Wynk, Bandcamp, Last.fm, Qobuz and Anghami are all named one by one in
-the allowlist at the bottom of `filter.txt`, so the intent survives you merging this with someone
+the allowlist at the bottom of `blocklist-full.txt`, so the intent survives you merging this with someone
 else's blocklist.
 
 Also left alone on purpose: `amazon.com`, `apple.com`, `google.com`, `googleapis.com`,
@@ -150,7 +155,7 @@ collapses 71 announce hosts into one rule, and it also catches ad tech endpoints
 `tracker.samplicio.us`, which you probably want. But if your employer runs a public issue tracker
 at `tracker.company.com`, it gets blocked. Private namespaces are protected by an exception rule
 covering `.internal`, `.local`, `.corp`, `.lan`, `.home` and `.intranet`. Public ones are not.
-Use `filter.txt` if that matters to you.
+Use `blocklist-full.txt` if that matters to you.
 
 ### Native apps
 
@@ -245,16 +250,16 @@ refresh every month or two. The licensed streaming section is stable and does no
 
 ```sh
 # edit the source lists in tools/, then
-python3 tools/build.py                 # regenerates filter.txt
-python3 tools/build_compact.py         # regenerates filter-compact.txt, fails if over 1000
+python3 tools/build.py                 # regenerates blocklist-full.txt
+python3 tools/build_compact.py         # regenerates blocklist.txt, fails if over 1000
 
 npx @adguard/hostlist-compiler -c tools/cfg.json -o /dev/null
 npx @adguard/hostlist-compiler -c tools/cfg-compact.json -o /dev/null
 
-cd tools/verify && go run accept.go ../../filter-compact.txt   # real engine check
+cd tools/verify && go run accept.go ../../blocklist.txt   # real engine check
 ```
 
-`tools/build.py` regenerates `filter.txt` byte for byte from `tools/header.txt`,
+`tools/build.py` regenerates `blocklist-full.txt` byte for byte from `tools/header.txt`,
 `tools/footer.txt` and the `tools/cur_*.txt` source lists. `tools/digsweep.sh` and
 `tools/digns.sh` are the liveness probes described above.
 

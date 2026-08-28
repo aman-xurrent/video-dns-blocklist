@@ -9,7 +9,7 @@
 ! License: MIT. The YouTube country domain list came from
 !          v2fly/domain-list-community.
 ! Last modified: 2026-08-28T08:50:40.000Z
-! Version: 1.3.0-compact
+! Version: 1.3.1-compact
 ! Total rules: 1902 blocking rules, 36 exception rules
 !
 ! ============================================================================
@@ -45,7 +45,7 @@
 ! that cap applies to custom blocklists added by URL, which is how you subscribe to
 ! this file. AdGuard's own catalog lists are free and do not count against it. A
 ! custom list that goes over the cap is disabled automatically. This build carries
-! the same coverage as filter.txt in roughly half the rules, and catches mirrors
+! the same coverage as blocklist-full.txt in roughly half the rules, and catches mirrors
 ! that do not exist yet.
 !
 ! Two things about regex rules that are easy to get wrong, both verified against
@@ -217,7 +217,7 @@
 ! The other 1,142 could not be checked by hand with any confidence, so the whole
 ! block was dropped rather than shipped on trust. Six known false positives in a
 ! spot check is enough to distrust the source. Coverage of the genuinely piracy
-! shaped domains now comes from the regular expressions in filter-compact.txt,
+! shaped domains now comes from the regular expressions in blocklist.txt,
 ! which match on brand and shape instead of on an imported list nobody verified.
 !
 ! Piracy mirror domains change every few weeks. The torrent and pirate streaming

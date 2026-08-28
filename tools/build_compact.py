@@ -1,4 +1,4 @@
-"""Build filter-compact.txt: the same coverage as filter.txt, squeezed under the
+"""Build blocklist.txt: the same coverage as blocklist-full.txt, squeezed under the
 1000 rule cap on the AdGuard DNS Personal plan by swapping ~1642 literal domain
 rules for a small set of RE2 regular expressions.
 
@@ -101,8 +101,8 @@ full = re.sub(r'(?m)^! Last modified: .*$',
     '! Last modified: ' + datetime.datetime.now(datetime.timezone.utc)
         .strftime('%Y-%m-%dT%H:%M:%S.000Z'), full)
 
-open(os.path.join(ROOT, 'filter-compact.txt'), 'w').write(full)
-print('filter-compact.txt: %d regex + %d literal + %d exception = %d rules (cap 1000)'
+open(os.path.join(ROOT, 'blocklist.txt'), 'w').write(full)
+print('blocklist.txt: %d regex + %d literal + %d exception = %d rules (cap 1000)'
       % (n_re, n_lit, n_allow, total))
 if total > 1000:
     raise SystemExit('OVER CAP by %d rules' % (total - 1000))

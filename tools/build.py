@@ -117,7 +117,7 @@ for f in ('cur_youtube.txt', 'cur_streaming.txt', 'cur_extra_req.txt', 'cur_torr
 # webcast.berkeley.edu, pbs.org and bittorrent.com in there, all legitimate sites
 # that once ran a BitTorrent tracker for lawful distribution. 1148 domains that
 # cannot be audited by hand are not worth six known false positives, so the whole
-# block is gone. filter-compact.txt covers the same ground with regexes instead.
+# block is gone. blocklist.txt covers the same ground with regexes instead.
 out += ['!', '! ' + '-'*74,
         '! Removed in v1.2.0: the extended block from The Block List Project',
         '! ' + '-'*74,
@@ -126,7 +126,7 @@ out += ['!', '! ' + '-'*74,
         '! pbs.org, webcast.berkeley.edu and bittorrent.com sitting in it, all legitimate',
         '! sites that once ran a BitTorrent tracker for lawful distribution. The rest',
         '! could not be checked by hand, so the whole block was dropped rather than',
-        '! shipped on trust. See filter-compact.txt for regex based coverage instead.',
+        '! shipped on trust. See blocklist.txt for regex based coverage instead.',
         '!']
 out.append('')
 
@@ -139,5 +139,5 @@ na = full.count('\n@@')
 import re
 full = re.sub(r'(?m)^! Total rules: .*$',
               '! Total rules: %d blocking rules, %d exception rules' % (nb, na), full)
-open(os.path.join(ROOT, 'filter.txt'), 'w').write(full)
-print('wrote filter.txt: %d blocking, %d exception' % (nb, na))
+open(os.path.join(ROOT, 'blocklist-full.txt'), 'w').write(full)
+print('wrote blocklist-full.txt: %d blocking, %d exception' % (nb, na))

@@ -1,5 +1,5 @@
 {
   "name": "Video Entertainment and Torrent DNS Blocklist",
-  "sources": [{ "source": "filter.txt", "type": "adblock" }],
+  "sources": [{ "source": "blocklist-full.txt", "type": "adblock" }],
   "transformations": ["RemoveComments", "Deduplicate", "Validate"]
 }
