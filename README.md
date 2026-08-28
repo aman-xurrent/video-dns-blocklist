@@ -11,46 +11,49 @@ Written in AdGuard DNS filtering syntax, the same syntax the
 
 ## Subscribe
 
-Two builds, same coverage. Pick one.
-
-> **Renamed in v1.3.1.** These files used to be `filter-compact.txt` and `filter.txt`. They were
-> renamed to bust a stale cache: AdGuard and the GitHub raw CDN both cache by URL, and a new path
-> is the reliable way to force a refetch. The old URLs are gone. This is a one time thing, future
-> content updates land at these same URLs and refresh on their own.
-
-**Compact, 493 rules.** Use this if your resolver caps you. The AdGuard DNS Personal plan
-allows 1000 filtering rules, and that cap applies to **custom blocklists added by URL**, which
-is exactly how you would subscribe to this one. AdGuard's own catalog lists do not count against
-it, so enabling the AdGuard DNS filter alongside this costs you nothing. Go over the cap and the
-offending custom list is disabled automatically. Team is 5K, Enterprise is 100K.
-
 ```
 https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist.txt
 ```
 
-**Full, 798 rules.** Every rule is a plain domain, nothing to reason about. Use this if you
-self host AdGuard Home or Pi-hole, where there is no cap.
+493 rules: 126 regular expressions, 330 literal domains, 37 exceptions.
 
-```
-https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist-full.txt
-```
+> **Renamed in v1.3.1.** This file used to be `filter-compact.txt`. It was renamed to bust a
+> stale cache, since AdGuard and the GitHub raw CDN both cache by URL. One time only. Future
+> content updates land at this same URL and refresh on their own.
 
-The compact build swaps 494 literal domain rules for 126 regular expressions. It is not just
-smaller: a brand anchored pattern like the one covering 1337x follows that site to whatever TLD
-it jumps to next month, which a literal list cannot do.
+The AdGuard DNS Personal plan allows 1000 filtering rules, and that cap applies to **custom
+blocklists added by URL**, which is how you subscribe to this. AdGuard's own catalog lists do not
+count against it, so enabling the AdGuard DNS filter alongside this costs you nothing. A custom
+list that goes over the cap is disabled automatically. Team is 5K, Enterprise is 100K.
 
-Both are validated with
-[`@adguard/hostlist-compiler`](https://github.com/AdguardTeam/HostlistCompiler) v2.1.1 (zero
-invalid rules, zero duplicates) and tested against AdGuard's own matching engine,
+Validated with [`@adguard/hostlist-compiler`](https://github.com/AdguardTeam/HostlistCompiler)
+v2.1.1 (zero invalid rules, zero duplicates) and tested against AdGuard's own matching engine,
 [`urlfilter`](https://github.com/AdguardTeam/urlfilter): 2964 hostnames must block and all do,
-129 guard hostnames must stay reachable and all do.
+128 guard hostnames must stay reachable and all do.
 
 | Resolver | How to add it |
 |---|---|
-| AdGuard Home | Filters > DNS blocklists > Add blocklist. Both rule types work as is. |
+| AdGuard Home | Filters > DNS blocklists > Add blocklist. |
 | AdGuard DNS | Custom blocklist URL, or paste into custom filtering rules. |
-| Pi-hole | Use `blocklist-full.txt`, not the compact build: Pi-hole does not evaluate regex rules from an adlist. Adlists also do **not** reliably understand `@@` exceptions, so add `music.youtube.com` to Domains > Allow by hand. |
 | NextDNS | Denylist import, then allow `music.youtube.com` by hand. |
+| Pi-hole | **Not supported as is.** See below. |
+
+### Pi-hole needs a different build
+
+Pi-hole cannot read regular expressions from an adlist. It parses `||domain^` fine, but `/regex/`
+entries are ignored, so this file would silently degrade to its 330 literal rules and lose the
+piracy brand coverage. Pi-hole also ignores `@@` exceptions.
+
+There used to be a second all-literal `blocklist-full.txt` in this repo for that case. It was
+deleted because the compact build is a strict superset of it (verified: 4560 hostnames blocked by
+the literal build, zero missed by the compact one) and keeping two outputs in sync caused real
+bugs. Nothing is lost, because the literal build is generated, not hand written:
+
+```sh
+python3 tools/build.py     # writes blocklist-full.txt
+```
+
+Then host that file yourself and add `music.youtube.com` to Pi-hole's allow list by hand.
 
 ## What it blocks
 
@@ -73,7 +76,7 @@ manga readers, game repack sites.
 
 Every music service. Spotify, Apple Music, Amazon Music, YouTube Music, SoundCloud, Deezer, Tidal,
 Pandora, JioSaavn, Gaana, Wynk, Bandcamp, Last.fm, Qobuz and Anghami are all named one by one in
-the allowlist at the bottom of `blocklist-full.txt`, so the intent survives you merging this with someone
+the allowlist at the bottom of `blocklist.txt`, so the intent survives you merging this with someone
 else's blocklist.
 
 Also left alone on purpose: `amazon.com`, `apple.com`, `google.com`, `googleapis.com`,
@@ -155,7 +158,7 @@ collapses 71 announce hosts into one rule, and it also catches ad tech endpoints
 `tracker.samplicio.us`, which you probably want. But if your employer runs a public issue tracker
 at `tracker.company.com`, it gets blocked. Private namespaces are protected by an exception rule
 covering `.internal`, `.local`, `.corp`, `.lan`, `.home` and `.intranet`. Public ones are not.
-Use `blocklist-full.txt` if that matters to you.
+If that bites you, delete the `/(^|\.)tracker[0-9]?\./` line and you lose nothing else.
 
 ### Native apps
 
