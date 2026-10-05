@@ -9,7 +9,7 @@
 ! License: MIT. The YouTube country domain list came from
 !          v2fly/domain-list-community.
 ! Last modified: 2026-08-28T08:50:40.000Z
-! Version: 1.5.0
+! Version: 1.5.1
 ! Total rules: 1902 blocking rules, 36 exception rules
 !
 ! ============================================================================
@@ -185,6 +185,8 @@
 !     APIs that Jellyfin, Kodi, Radarr and Plex call; blocking them silently
 !     breaks media libraries)
 !   Google Drive, Dropbox, OneDrive (general cloud storage)
+!   w.meta.me, fb.me, m.me, wa.me, ig.me, l.facebook.com, lm.facebook.com,
+!     l.instagram.com (Meta short links and link redirectors)
 !   every music service, see the allowlist at the bottom
 !
 ! Checked on 2026-08-28, because unblocking the music services while blocking the

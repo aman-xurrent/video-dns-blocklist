@@ -1,6 +1,7 @@
 abt.com
 academictorrents.com
 accounts.google.com
+accounts.youtube.com
 amazon.com
 amazonaws.com
 anghami.com
@@ -31,6 +32,7 @@ dzcdn.net
 emby.media
 encore.scdn.co
 fanart.tv
+fb.me
 filmfestival.org
 gaana.com
 ggpht.com
@@ -41,6 +43,7 @@ googleusercontent.com
 googlevideo.com
 gutenberg.org
 i.ytimg.com
+ig.me
 iheart.com
 image.tmdb.org
 imdb.com
@@ -52,12 +55,16 @@ jellyfin.org
 jiosaavn.com
 jira.com
 justwatch.com
+l.facebook.com
+l.instagram.com
 last.fm
 legittorrents.info
 letterboxd.com
 libreoffice.org
 linuxtracker.org
+lm.facebook.com
 m.imdb.com
+m.me
 m.media-amazon.com
 metacritic.com
 microfilm.org
@@ -110,6 +117,8 @@ tracker.mycompany.internal
 trakt.tv
 tvlicensing.co.uk
 update.bittorrent.com
+w.meta.me
+wa.me
 web.archive.org
 webcast.berkeley.edu
 wikipedia.org

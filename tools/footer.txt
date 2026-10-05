@@ -4,7 +4,7 @@
 ! ============================================================================
 !
 ! An AdGuard exception rule beats a plain blocking rule no matter where the two
-! rules sit in the file. Three jobs are done here.
+! rules sit in the file. Four jobs are done here.
 !
 ! Job one: put music.youtube.com back after ||youtube.com^ blocked it.
 !
@@ -51,13 +51,31 @@
 ! and i.ytimg.com. The native YouTube Music app also needs
 ! youtubei.googleapis.com, the private InnerTube API. The native YouTube app
 ! uses the same API, so that line keeps that app working too. See the optional
-! strict tier in the header.
+! strict tier in the header. accounts.youtube.com is the YouTube half of Google
+! sign-in and serves no video, so its line puts it back after the YouTube regex
+! blocked it.
 !
 @@||accounts.google.com^
+@@||accounts.youtube.com^
 @@||yt3.googleusercontent.com^
 @@||googlevideo.com^
 @@||i.ytimg.com^
 @@||youtubei.googleapis.com^
+!
+! Job four: Meta's short links and link redirectors stay reachable. None of
+! these are blocked above. They are named so a link someone sends you in
+! WhatsApp, Messenger, Facebook or Instagram still opens when this file is
+! merged with a list that blocks them. A short link that opens a video page
+! still fails at that page, on purpose.
+!
+@@||w.meta.me^
+@@||fb.me^
+@@||m.me^
+@@||wa.me^
+@@||ig.me^
+@@||l.facebook.com^
+@@||lm.facebook.com^
+@@||l.instagram.com^
 !
 ! If you ever merge this with a list that uses $important to block one of the
 ! above, append $important to the matching line here so it wins, for example:

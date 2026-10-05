@@ -15,7 +15,7 @@ Written in AdGuard DNS filtering syntax, the same syntax the
 https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist.txt
 ```
 
-493 rules: 126 regular expressions, 329 literal domains, 38 exceptions.
+502 rules: 126 regular expressions, 329 literal domains, 47 exceptions.
 
 > **Renamed in v1.3.1.** This file used to be `filter-compact.txt`. It was renamed to bust a
 > stale cache, since AdGuard and the GitHub raw CDN both cache by URL. One time only. Future
@@ -29,7 +29,7 @@ list that goes over the cap is disabled automatically. Team is 5K, Enterprise is
 Validated with [`@adguard/hostlist-compiler`](https://github.com/AdguardTeam/HostlistCompiler)
 v2.1.1 (zero invalid rules, zero duplicates) and tested against AdGuard's own matching engine,
 [`urlfilter`](https://github.com/AdguardTeam/urlfilter): 2964 hostnames must block and all do,
-129 guard hostnames must stay reachable and all do.
+138 guard hostnames must stay reachable and all do.
 
 | Resolver | How to add it |
 |---|---|
@@ -82,6 +82,15 @@ else's blocklist.
 Also left alone on purpose: `amazon.com`, `apple.com`, `google.com`, `googleapis.com`,
 `amazonaws.com`, `archive.org`, the Ubuntu and Fedora torrent trackers, Jellyfin and Emby, and
 general cloud storage like Google Drive, Dropbox and OneDrive.
+
+Meta's short links and link redirectors are allowlisted, so links sent in WhatsApp, Messenger,
+Facebook and Instagram open even when you merge this with a list that blocks them: `w.meta.me`,
+`fb.me`, `m.me`, `wa.me`, `ig.me`, `l.facebook.com`, `lm.facebook.com`, `l.instagram.com`. A short
+link that opens a video page still fails at that page. `youtu.be` stays blocked, because it opens
+YouTube video.
+
+`accounts.youtube.com` is allowlisted too. It is the YouTube half of Google sign-in and serves no
+video.
 
 ## Read this before you file a bug
 

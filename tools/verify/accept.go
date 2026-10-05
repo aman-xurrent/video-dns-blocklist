@@ -50,6 +50,9 @@ func main() {
 		"a2z.com", "unagi.amazon.com", "amazon.com",
 		// YouTube Music: a real audio edge host, and the InnerTube API both native apps call
 		"rr8---sn-ci5gup-cagr.googlevideo.com", "youtubei.googleapis.com",
+		// sign-in and Meta short links: allowlisted on purpose
+		"accounts.youtube.com",
+		"w.meta.me", "fb.me", "m.me", "wa.me", "ig.me", "l.facebook.com", "lm.facebook.com", "l.instagram.com",
 	}
 
 	verdict := func(h string) (bool, string) {
