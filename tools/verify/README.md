@@ -7,7 +7,7 @@ a regex library. That distinction caught two bugs that a plain regex test cannot
 cd tools/verify
 go mod init verify && go get github.com/AdguardTeam/urlfilter@latest
 
-# acceptance: 40 hostnames that must be blocked, 46 that must stay reachable
+# acceptance: 52 hostnames that must be blocked, 57 that must stay reachable
 go run accept.go ../../blocklist.txt
 
 # full sweep: coverage, guard list, collateral against a top-domains corpus

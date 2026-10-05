@@ -15,7 +15,7 @@ Written in AdGuard DNS filtering syntax, the same syntax the
 https://raw.githubusercontent.com/aman-xurrent/video-dns-blocklist/main/blocklist.txt
 ```
 
-493 rules: 126 regular expressions, 330 literal domains, 37 exceptions.
+493 rules: 126 regular expressions, 329 literal domains, 38 exceptions.
 
 > **Renamed in v1.3.1.** This file used to be `filter-compact.txt`. It was renamed to bust a
 > stale cache, since AdGuard and the GitHub raw CDN both cache by URL. One time only. Future
@@ -29,7 +29,7 @@ list that goes over the cap is disabled automatically. Team is 5K, Enterprise is
 Validated with [`@adguard/hostlist-compiler`](https://github.com/AdguardTeam/HostlistCompiler)
 v2.1.1 (zero invalid rules, zero duplicates) and tested against AdGuard's own matching engine,
 [`urlfilter`](https://github.com/AdguardTeam/urlfilter): 2964 hostnames must block and all do,
-128 guard hostnames must stay reachable and all do.
+129 guard hostnames must stay reachable and all do.
 
 | Resolver | How to add it |
 |---|---|
@@ -41,7 +41,7 @@ v2.1.1 (zero invalid rules, zero duplicates) and tested against AdGuard's own ma
 ### Pi-hole needs a different build
 
 Pi-hole cannot read regular expressions from an adlist. It parses `||domain^` fine, but `/regex/`
-entries are ignored, so this file would silently degrade to its 330 literal rules and lose the
+entries are ignored, so this file would silently degrade to its 329 literal rules and lose the
 piracy brand coverage. Pi-hole also ignores `@@` exceptions.
 
 There used to be a second all-literal `blocklist-full.txt` in this repo for that case. It was
@@ -93,15 +93,18 @@ unblocked on purpose because Music needs them: `googlevideo.com`, `youtubei.goog
 
 Two consequences:
 
-1. **The native YouTube app still plays video.** On Android, iOS and smart TVs it talks to
-   `youtubei.googleapis.com` and `googlevideo.com` and never resolves `youtube.com`. What this
-   list does kill is YouTube on the web, on every device on your network. DNS cannot do better
-   than that. If you need the apps gone, remove them from the device or use an MDM app block.
+1. **The native YouTube app still plays video, next to the YouTube Music app.** On Android, iOS
+   and smart TVs both apps talk to `youtubei.googleapis.com` and `googlevideo.com` and never
+   resolve `youtube.com`. What this list does kill is YouTube on the web, on every device on your
+   network. DNS cannot do better than that. If you need the YouTube app gone, remove it from the
+   device, or block it with Screen Time, Family Link or an MDM app block. The strict tier below
+   also works, but it kills the YouTube Music app too.
 
 2. **Signing in to YouTube Music in a browser breaks.** The sign-in link hands Google a continue
    URL of `https://www.youtube.com/signin?...`, and that hostname is blocked. If you are already
    signed in, nothing happens. To sign in fresh, do one of these:
-   - sign in on the YouTube Music phone app, which never touches `www.youtube.com`, or
+   - sign in on the YouTube Music phone app, which never touches `www.youtube.com` (not with
+     the strict tier on, because that app is blocked), or
    - pause the filter, sign in once, turn it back on, or
    - temporarily add `@@||www.youtube.com^`, sign in, remove it.
 
@@ -109,18 +112,25 @@ Playback, search and your library all work fine once you are signed in. Verified
 reading the real `music.youtube.com` HTML: the player JavaScript is served from `/s/player/` on
 its own hostname and the InnerTube API call is same origin.
 
-### Strict tier, on by default since v1.3.0
+### Strict tier, optional, off since v1.5.0
 
-`||youtubei.googleapis.com^` is an active rule. It kills **both** native apps, YouTube and
-YouTube Music, because both talk to the private InnerTube API and nothing else reaches it.
+v1.3.0 through v1.4.0 shipped with the strict tier on. To turn it back on, add this to your own
+custom rules:
 
-**YouTube Music in a browser still works.** Verified in a live session, not assumed: every
-InnerTube call the web player makes goes same origin to `music.youtube.com/youtubei/v1/`
-(player, next, browse, guide, search suggestions) and audio streams from `googlevideo.com`. It
-never touches `youtubei.googleapis.com`.
+```
+||youtubei.googleapis.com^$important
+```
 
-To go back to the softer behaviour where the apps work, delete that rule and add
-`@@||youtubei.googleapis.com^` to the allowlist.
+It kills **both** native apps, YouTube and YouTube Music, because both talk to the private
+InnerTube API. The `$important` is required: this list carries `@@||youtubei.googleapis.com^`,
+and a plain block rule loses to an exception. Checked in AdGuard's engine (`urlfilter`
+v0.23.4) on 2026-10-05: without `$important` the host stays reachable, with it the host is
+blocked.
+
+**YouTube Music in a browser still works with the strict tier on.** Verified in a live session,
+not assumed: every InnerTube call the web player makes goes same origin to
+`music.youtube.com/youtubei/v1/` (player, next, browse, guide, search suggestions) and audio
+streams from `googlevideo.com`. It never touches `youtubei.googleapis.com`.
 
 Never block `googlevideo.com`, `ytimg.com` or `ggpht.com`. Those break YouTube Music on the web
 too.
@@ -182,9 +192,9 @@ section:
 Deliberately not blocked: `unagi.amazon.com` and friends. That is Prime Video telemetry, but the
 Amazon shopping app uses it too, and blocking telemetry does not stop playback.
 
-**The YouTube app is blocked since v1.3.0**, via `||youtubei.googleapis.com^`. The cost is that
-the YouTube Music app dies with it, since they share that API. YouTube Music in a browser is
-unaffected.
+**The YouTube app has not been blocked since v1.5.0.** The YouTube Music app needs
+`youtubei.googleapis.com`, and the YouTube app uses the same API, so DNS cannot block one without
+the other. To block both, turn on the strict tier described above.
 
 ### If it blocks in the browser but not in apps
 

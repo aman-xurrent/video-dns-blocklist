@@ -4,7 +4,7 @@
 ! ============================================================================
 !
 ! An AdGuard exception rule beats a plain blocking rule no matter where the two
-! rules sit in the file. Two jobs are done here.
+! rules sit in the file. Three jobs are done here.
 !
 ! Job one: put music.youtube.com back after ||youtube.com^ blocked it.
 !
@@ -46,15 +46,18 @@
 @@||anghami.com^
 @@||iheart.com^
 !
-! Job three: the shared Google infrastructure YouTube Music on the WEB needs.
-! youtubei.googleapis.com is deliberately absent from this list since v1.3.0,
-! because it is now blocked on purpose to kill the two native apps. The web
-! player does not need it: it calls InnerTube same origin on music.youtube.com.
+! Job three: the shared Google infrastructure YouTube Music needs. The web
+! player needs accounts.google.com, yt3.googleusercontent.com, googlevideo.com
+! and i.ytimg.com. The native YouTube Music app also needs
+! youtubei.googleapis.com, the private InnerTube API. The native YouTube app
+! uses the same API, so that line keeps that app working too. See the optional
+! strict tier in the header.
 !
 @@||accounts.google.com^
 @@||yt3.googleusercontent.com^
 @@||googlevideo.com^
 @@||i.ytimg.com^
+@@||youtubei.googleapis.com^
 !
 ! If you ever merge this with a list that uses $important to block one of the
 ! above, append $important to the matching line here so it wins, for example:

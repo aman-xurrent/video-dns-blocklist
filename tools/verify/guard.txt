@@ -123,6 +123,7 @@ www.gutenberg.org
 www.pbs.org
 www.torrentfreak.com
 wynk.in
+youtubei.googleapis.com
 yt3.ggpht.com
 yt3.googleusercontent.com
 ytimg.com

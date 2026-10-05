@@ -75,8 +75,9 @@ APP_NOTES = [
  "Prime Video telemetry, but Amazon's shopping app uses them too, and blocking",
  "telemetry does not stop playback. Not worth the collateral.",
  "",
- "Still not blocked, and not fixable here: the YouTube app. It only ever resolves",
- "youtubei.googleapis.com and googlevideo.com, both of which YouTube Music needs.",
+ "Not blocked on purpose: the YouTube app. It only ever resolves",
+ "youtubei.googleapis.com and googlevideo.com, and the native YouTube Music app",
+ "needs both. The optional strict tier in the header blocks both apps.",
 ]
 
 SECTIONS.append(("Native mobile and TV app endpoints", APP_NOTES,

@@ -6,4 +6,3 @@
 /(^|\.)hses[0-9]*\.akamaized\.net$/
 /avod[a-z0-9]*-a\.akamaihd\.net$/
 /(^|\.)disneyplus\.com\.akamaized\.net$/
-||youtubei.googleapis.com^
